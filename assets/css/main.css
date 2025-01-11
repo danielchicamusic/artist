@@ -2593,6 +2593,61 @@ input, select, textarea {
 
 /* Header */
 
+/* Contenedor de la sección de redes sociales */
+#social-media {
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* Estilo del encabezado */
+#social-media header.major h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Estilo del contenedor de los iconos */
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Estilo para cada icono */
+.social-icon {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Estilo de las imágenes de los iconos */
+.social-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Efecto hover */
+.social-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Colores específicos por red social (si quieres usarlos para bordes o como fondo) */
+.social-icon.instagram:hover {
+    border: 2px solid #e4405f; /* Rojo Instagram */
+}
+
+.social-icon.facebook:hover {
+    border: 2px solid #3b5998; /* Azul Facebook */
+}
+
+.social-icon.youtube:hover {
+    border: 2px solid #ff0000; /* Rojo YouTube */
+}
 
 
 /* Estilo general para los íconos */
