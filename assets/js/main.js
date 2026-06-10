@@ -7,7 +7,7 @@ djs.forEach(n=>{const d=document.createElement("div");d.className="dj";d.textCon
 const imgs=[
   "images/gallery/photo1.jpg",
   "images/gallery/photo2.jpg",
-  "images/gallery/photo3.jpg",
+  "images/gallery/photo4.jpg",
 ];
 
 const trk=document.getElementById("gtrak");
