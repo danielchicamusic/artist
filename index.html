@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daniel Chica — Press Kit 2026</title>
+<link rel="icon" type="image/png" href="images/logos/favicon.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="lb" id="lb" onclick="this.classList.remove('on')"><img id="lb-img" src="" alt=""></div>
+
+<nav class="nav">
+  <div class="nav-logo"><img src="images/logos/nombre.png" alt="Daniel Chica"></div>
+  <div class="nav-links">
+    <a href="#bio">Bio</a>
+    <a href="#releases">Releases</a>
+    <a href="#music">Music</a>
+    <a href="#rider">Rider</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#booking">Booking</a>
+  </div>
+  <div class="nav-pk">Press Kit 2026</div>
+</nav>
+
+<div class="video-hero">
+  <iframe src="https://www.youtube.com/embed/QJJJYvYVmYI?autoplay=1&mute=1&loop=1&playlist=QJJJYvYVmYI&rel=0&modestbranding=1&playsinline=1&color=white" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe>
+  <div class="video-overlay">
+    <div class="hero-brand">
+      <img class="hero-iso" src="images/logos/flecha.png" alt="">
+      <img class="hero-wm" src="images/logos/nombre.png" alt="Daniel Chica">
+    </div>
+    <div class="hero-sub">DJ &middot; Producer &middot; Madrid &mdash; COL / ESP</div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-val">14<span>+</span></div><div class="stat-lbl">Years active</div></div>
+  <div class="stat-item"><div class="stat-val">Top<span>5</span></div><div class="stat-lbl">Beatport</div></div>
+  <div class="stat-item"><div class="stat-val">100<span>%</span></div><div class="stat-lbl">Music Experience &amp; Technical</div></div>
+</div>
+
+<!-- BIO -->
+<div class="section" id="bio">
+  <div class="section-inner">
+    <div class="sec-label"><img class="sec-label-iso" src="images/logos/flecha.png" alt=""><span class="sec-label-text">Biography</span></div>
+    <p class="bio-body">Daniel, Telematics Engineer and a true dance floor artist. Based in <strong>Madrid (ESP)</strong> but originally from <strong>Manizales (COL)</strong>, he has built a solid career in the electronic music scene since his beginnings in <strong>2011</strong>. His sound masterfully combines elements of <strong>Minimal, House, Tech and Dance Music</strong>, delivering high-energy hybrid sets specially designed for clubs and festivals.</p>
+    <p class="bio-body" style="margin-top:1.25rem">Their productions have had a strong impact in <strong>Germany, United Kingdom, Netherlands, Spain, Italy and Colombia</strong>, reaching the <strong>Top 100, Top 10 and Top 5 on Beatport</strong>.</p>
+    <p class="bio-body" style="margin-top:1.25rem">In 2021, recognized by the <strong>Amnesia Ibiza Bootcamp by Aulart</strong>, marking the beginning of his international career where he was later able to take his sound to the decks of <strong>Ibiza, Barcelona, Madrid</strong>.</p>
+    <p class="bio-body" style="margin-top:1.25rem">In Colombia he consolidated his career with great brands and promoters such as <strong>Open Doors Techno &amp; House, Techno Night Collective, Station Group, SCENE, ALIB, Booth, Real People, Grood Taste, After Mood, MadRadio, MeLosTomo, ILOVEMIERCOLES</strong> among others.</p>
+
+    <div style="text-align:center;margin-top:2.5rem;">
+      <a href="https://ra.co/dj/danielchica" target="_blank" class="ra-btn">
+        <img src="images/logos/ra.png" alt="Resident Advisor" style="height:64px;width:auto;border-radius:8px;">
+      </a>
+    </div>
+
+    <!-- ACH GRID -->
+    <div style="margin-top:2.5rem;">
+      <div class="ach-grid">
+        <div class="ach-card">
+          <div class="ach-logo-box"><img class="ach-logo" src="images/logos/beatport.png" alt="Beatport"></div>
+          <div><div class="ach-title">Top 5 Releases<br>on Beatport</div><div class="ach-sub">Germany &middot; UK &middot; Netherlands &middot; Spain &middot; Colombia</div></div>
+        </div>
+        <div class="ach-card">
+          <div class="ach-logo-box"><img class="ach-logo" src="images/logos/amnesia.png" alt="Amnesia" style="border-radius:6px;"></div>
+          <div><div class="ach-title">Amnesia Ibiza<br>Bootcamp</div><div class="ach-sub">By Aulart &mdash; 2021 &middot; International Career</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WARMUP -->
+    <div class="warmup-wrap">
+      <div class="warmup-header">
+        <img class="warmup-header-iso" src="images/logos/flecha.png" alt="">
+        <span class="warmup-header-label">Warm-up for</span>
+      </div>
+      <p class="warmup-intro">Shared the decks warming up for some of the most influential names in the global electronic music scene — from <strong>Berghain regulars</strong> to <strong>Ibiza mainstays</strong> and <strong>festival headliners</strong>.</p>
+      <div class="djs" id="djs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="section no-accent" id="gallery" style="padding-bottom:3rem;">
+  <div class="section-inner">
+    <div class="sec-label"><img class="sec-label-iso" src="images/logos/flecha.png" alt=""><span class="sec-label-text">Gallery</span></div>
+    <div class="gallery-outer"><div class="gallery-track" id="gtrak"></div></div>
+    <div class="gallery-controls">
+      <a href="https://drive.google.com/drive/folders/1P6M6rJTELRHQN9VsRq4sX9GNBZLvd_pJ?usp=sharing" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--black);border:none;padding:7px 20px;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">&#8595; Download Assets</a>
+      <div style="display:flex;gap:6px;">
+        <button class="gcbtn" onclick="gPrev()">&#8592; Prev</button>
+        <button class="gcbtn" onclick="gNext()">Next &#8594;</button>
+      </div>
+    </div>
+    <div class="gallery-hint">Click to enlarge &middot; Auto-slides every 4s &middot; Add photos to images/gallery/</div>
+  </div>
+</div>
+
+<!-- RELEASES -->
+<div class="section" id="releases">
+  <div class="section-inner">
+    <div class="sec-label"><img class="sec-label-iso" src="images/logos/flecha.png" alt=""><span class="sec-label-text">Releases &amp; Labels</span></div>
+    <div class="releases-grid">
+      <a class="rel-card" href="https://www.beatport.com/es/track/west-coast/28364414" target="_blank">
+        <div class="rel-cover"><img src="images/releases/remind.png" alt="Miami Music Week V.A"></div>
+        <div class="rel-info"><div class="rel-title">Miami Music Week V.A</div><div class="rel-artist">Daniel Chica</div><div class="rel-meta"><span class="rel-label">Remind Recordings</span><span class="rel-flag">🇪🇸</span></div><div class="rel-bp"><img src="images/logos/beatport.png" alt=""><span>Beatport ↗</span></div></div>
+      </a>
+      <a class="rel-card" href="https://www.beatport.com/es/release/night-motion/5031121" target="_blank">
+        <div class="rel-cover"><img src="images/releases/mindwave.png" alt="Night Motion"></div>
+        <div class="rel-info"><div class="rel-title">Night Motion</div><div class="rel-artist">Daniel Chica</div><div class="rel-meta"><span class="rel-label">MindWave Records</span><span class="rel-flag">🇳🇱</span></div><div class="rel-bp"><img src="images/logos/beatport.png" alt=""><span>Beatport ↗</span></div></div>
+      </a>
+      <a class="rel-card" href="https://www.beatport.com/release/your-body-to-me/4813421" target="_blank">
+        <div class="rel-cover"><img src="images/releases/solaris.png" alt="Your Body To Me"></div>
+        <div class="rel-info"><div class="rel-title">Your Body To Me</div><div class="rel-artist">Daniel Chica</div><div class="rel-meta"><span class="rel-label">Solaris Records</span><span class="rel-flag">🇬🇧</span></div><div class="rel-bp"><img src="images/logos/beatport.png" alt=""><span>Beatport ↗</span></div></div>
+      </a>
+      <a class="rel-card" href="https://www.beatport.com/es/release/deep-mind/4751262" target="_blank">
+        <div class="rel-cover"><img src="images/releases/mk17.png" alt="Deep Mind"></div>
+        <div class="rel-info"><div class="rel-title">Deep Mind</div><div class="rel-artist">Daniel Chica</div><div class="rel-meta"><span class="rel-label">MK17 Records</span><span class="rel-flag">🇪🇸</span></div><div class="rel-bp"><img src="images/logos/beatport.png" alt=""><span>Beatport ↗</span></div></div>
+      </a>
+      <a class="rel-card" href="https://www.beatport.com/es/release/sky-rain-ep/4340119" target="_blank">
+        <div class="rel-cover"><img src="images/releases/newviolence.png" alt="Sky Rain EP"></div>
+        <div class="rel-info"><div class="rel-title">Sky Rain EP</div><div class="rel-artist">Daniel Chica &amp; Rami</div><div class="rel-meta"><span class="rel-label">New Violence Records</span><span class="rel-flag">🇬🇧</span></div><div class="rel-bp"><img src="images/logos/beatport.png" alt=""><span>Beatport ↗</span></div></div>
+      </a>
+      <a class="rel-card" href="https://www.beatport.com/es/track/dance-sexy-dance/17680387" target="_blank">
+        <div class="rel-cover"><img src="images/releases/monkeystereo.png" alt="Sardinia Summer 2023"></div>
+        <div class="rel-info"><div class="rel-title">Sardinia Summer 2023</div><div class="rel-artist">Various Artists</div><div class="rel-meta"><span class="rel-label">Monkey Stereo Records</span><span class="rel-flag">🇮🇹</span></div><div class="rel-bp"><img src="images/logos/beatport.png" alt=""><span>Beatport ↗</span></div></div>
+      </a>
+    </div>
+    <!-- BANDCAMP -->
+    <div class="bc-header">
+      <span class="bc-badge">Bandcamp Exclusive</span>
+      <div style="flex:1;height:1px;background:var(--border);margin-left:1rem;"></div>
+    </div>
+    <div class="bc-grid">
+      <a class="bc-card" href="https://danielchicamusic.bandcamp.com/track/whisper-original-mix" target="_blank">
+        <div class="bc-cover"><img src="images/releases/whisper.png" alt="Whisper"></div>
+        <div class="bc-info"><div class="bc-title-track">Whisper (Original Mix)</div><div class="bc-artist">Daniel Chica</div><div class="bc-link"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M0 18.75l.008-9.38 3-1.72v9.38L0 18.75zm4.5-10.84l3-1.72v12.56l-3-1.72V7.91zm4.5-2.6l3-1.72v17.16l-3-1.72V5.31zm4.5-2.59l3 1.72v15.44l-3 1.72V2.72zm4.5 2.59l3 1.72v12.56l-3-1.72V5.31zm4.5 2.6V18.75l-3 1.72V7.91l3-1z"/></svg><span>Listen on Bandcamp ↗</span></div></div>
+      </a>
+      <a class="bc-card" href="https://danielchicamusic.bandcamp.com/track/ritual-drift" target="_blank">
+        <div class="bc-cover"><img src="images/releases/ritualdrift.png" alt="Ritual Drift"></div>
+        <div class="bc-info"><div class="bc-title-track">Ritual Drift</div><div class="bc-artist">Daniel Chica</div><div class="bc-link"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M0 18.75l.008-9.38 3-1.72v9.38L0 18.75zm4.5-10.84l3-1.72v12.56l-3-1.72V7.91zm4.5-2.6l3-1.72v17.16l-3-1.72V5.31zm4.5-2.59l3 1.72v15.44l-3 1.72V2.72zm4.5 2.59l3 1.72v12.56l-3-1.72V5.31zm4.5 2.6V18.75l-3 1.72V7.91l3-1z"/></svg><span>Listen on Bandcamp ↗</span></div></div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- MUSIC -->
+<div class="section" id="music">
+  <div class="section-inner">
+    <div class="sec-label"><img class="sec-label-iso" src="images/logos/flecha.png" alt=""><span class="sec-label-text">Music</span></div>
+    <div class="player-wrap">
+      <div class="player-head">
+        <div><div class="player-platform">Sets &amp; Full Sessions</div><div class="player-sub">Daniel Chica</div></div>
+        <a class="player-open" href="https://soundcloud.com/danielchicamusic" target="_blank">SoundCloud &#8599;</a>
+      </div>
+      <div class="platform-label">Spotify</div>
+      <iframe style="border-radius:4px" src="https://open.spotify.com/embed/artist/24M7xbGJgCWW7D8yx6vPO6?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" loading="lazy"></iframe>
+      <div class="player-divider"></div>
+      <div class="platform-label">SoundCloud</div>
+      <iframe width="100%" height="450" scrolling="no" frameborder="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/playlists/soundcloud%253Aplaylists%253A1619691775&color=%232dd4bf&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- RIDER -->
+<div class="section" id="rider">
+  <div class="section-inner">
+    <div class="sec-label"><img class="sec-label-iso" src="images/logos/flecha.png" alt=""><span class="sec-label-text">Technical Rider</span></div>
+    <div class="rider-layout">
+      <div class="rider-cols">
+        <div class="rider-card">
+          <div class="rider-card-title">Provided by venue</div>
+          <ul class="rider-list">
+            <li>Mixer 4 channels + AUDIO MIDI
+              <div class="rider-note">Allen &amp; Heath XONE 96</div>
+              <div class="rider-note">Pioneer DJM V10 &middot; 900NXS2 &middot; A9</div>
+            </li>
+          </ul>
+        </div>
+        <div class="rider-card">
+          <div class="rider-card-title">Provided by artist</div>
+          <ul class="rider-list">
+            <li>Macbook Pro</li><li>Maschine Mk2</li><li>Xone K2</li><li>LaunchControl XL</li>
+          </ul>
+        </div>
+      </div>
+      <div class="rider-img-wrap" onclick="openLb('images/rider.png')">
+        <img src="images/rider.png" alt="Technical Rider">
+        <div class="rider-img-hint">&#9650; Click to enlarge</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING -->
+<div class="section" id="booking">
+  <div class="section-inner">
+    <div class="sec-label"><img class="sec-label-iso" src="images/logos/flecha.png" alt=""><span class="sec-label-text">Booking</span></div>
+    <div class="booking-layout">
+      <form class="booking-form" action="https://formspree.io/f/mdalbkwv" method="POST">
+        <input class="finput" type="email" name="email" placeholder="Your email">
+        <textarea class="finput" name="message" rows="5" placeholder="Event details &amp; description"></textarea>
+        <button type="submit" class="fsubmit">Send Message</button>
+      </form>
+      <div class="binfo">
+        <div><div class="binfo-label">Location</div><div class="binfo-val">Madrid, Spain</div></div>
+        <div><div class="binfo-label">Active since</div><div class="binfo-val">2011</div></div>
+        <div>
+          <div class="binfo-label">Download assets</div>
+          <a class="dl-btn" href="https://drive.google.com/drive/folders/1P6M6rJTELRHQN9VsRq4sX9GNBZLvd_pJ?usp=sharing" target="_blank">Photos, Logo &amp; Videos &#8595;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div style="font-size:10px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted);margin-bottom:0.25rem;">Social Media</div>
+  <div class="footer-socials">
+    <a class="footer-social" href="https://www.instagram.com/danielchica.music" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> Instagram</a>
+    <a class="footer-social" href="https://www.facebook.com/danielchica.music/" target="_blank"><svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook</a>
+    <a class="footer-social" href="https://soundcloud.com/danielchicamusic" target="_blank"><svg viewBox="0 0 24 24"><path d="M1.175 12.225c-.015 0-.023.01-.023.025l-.323 2.452.323 2.41c0 .016.008.025.023.025.014 0 .022-.009.027-.025l.366-2.41-.366-2.452c-.005-.016-.013-.025-.027-.025zm.887-.958c-.02 0-.031.014-.031.032l-.412 3.41.412 3.37c0 .018.011.03.031.03.018 0 .03-.012.03-.03l.467-3.37-.467-3.41c0-.018-.012-.032-.03-.032zm.925-.412c-.024 0-.04.017-.04.04l-.5 3.82.5 3.77c0 .024.016.04.04.04.023 0 .039-.016.039-.04l.567-3.77-.567-3.82c0-.023-.016-.04-.04-.04zm.944-.236c-.027 0-.047.02-.047.047l-.588 4.056.588 4c0 .027.02.047.047.047s.047-.02.047-.047l.667-4-.667-4.056c0-.027-.02-.047-.047-.047zm.963-.175c-.03 0-.054.024-.054.055l-.677 4.23.677 4.174c0 .03.024.055.054.055.031 0 .055-.025.055-.055l.766-4.174-.766-4.23c0-.031-.024-.055-.055-.055zm.98-.108c-.034 0-.062.027-.062.062l-.763 4.338.763 4.282c0 .034.028.062.062.062.035 0 .062-.028.062-.062l.864-4.282-.864-4.338c0-.035-.027-.062-.062-.062zm1.927 9.67c.038 0 .07-.033.07-.07l.955-5.26-.955-5.31c0-.038-.032-.07-.07-.07-.039 0-.07.032-.07.07l-.862 5.31.862 5.26c0 .037.031.07.07.07zm.99.04c.043 0 .077-.034.077-.077l1.04-5.3-1.04-5.35c0-.043-.034-.077-.077-.077-.044 0-.078.034-.078.077l-.936 5.35.936 5.3c0 .043.034.077.078.077zm1.01.042c.047 0 .085-.038.085-.085l1.127-5.34-1.127-5.4c0-.047-.038-.085-.085-.085-.048 0-.085.038-.085.085l-1.016 5.4 1.016 5.34c0 .047.037.085.085.085zm1.02.042c.052 0 .093-.042.093-.093l1.212-5.38-1.212-5.46c0-.052-.041-.093-.093-.093-.053 0-.094.041-.094.093l-1.094 5.46 1.094 5.38c0 .051.041.093.094.093zm1.028.043c.056 0 .1-.044.1-.1l1.298-5.42-1.298-5.52c0-.056-.044-.1-.1-.1-.057 0-.101.044-.101.1l-1.172 5.52 1.172 5.42c0 .056.044.1.101.1zm4.5.697c.61 0 1.205-.12 1.75-.34.167-.067.217-.24.217-.39V6.5c0-.156-.1-.292-.255-.336-.43-.13-.89-.2-1.37-.2-2.486 0-4.5 2.015-4.5 4.5v5.278c0 .154.1.29.252.336.41.127.85.197 1.307.197z"/></svg> SoundCloud</a>
+    <a class="footer-social" href="https://www.beatport.com/artist/daniel-chica/797954" target="_blank"><img class="soc-logo" src="images/logos/beatport.png" alt="Beatport"> Beatport</a>
+    <a class="footer-social" href="https://danielchicamusic.bandcamp.com/" target="_blank"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M0 18.75l.008-9.38 3-1.72v9.38L0 18.75zm4.5-10.84l3-1.72v12.56l-3-1.72V7.91zm4.5-2.6l3-1.72v17.16l-3-1.72V5.31zm4.5-2.59l3 1.72v15.44l-3 1.72V2.72zm4.5 2.59l3 1.72v12.56l-3-1.72V5.31zm4.5 2.6V18.75l-3 1.72V7.91l3-1z"/></svg> Bandcamp</a>
+    <a class="footer-social" href="https://es.ra.co/dj/danielchica" target="_blank"><img class="soc-logo" src="images/logos/ra.png" alt="RA"> Resident Advisor</a>
+    <a class="footer-social" href="https://open.spotify.com/intl-es/artist/24M7xbGJgCWW7D8yx6vPO6" target="_blank"><svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg> Spotify</a>
+    <a class="footer-social" href="https://music.apple.com/co/artist/daniel-chica/1475545811" target="_blank"><svg viewBox="0 0 24 24"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701z"/></svg> Apple Music</a>
+    <a class="footer-social" href="https://www.traxsource.com/artist/508176/daniel-chica" target="_blank"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0;"><path d="M12 0L1.5 6v12L12 24l10.5-6V6L12 0zm0 2.4l8.1 4.65v9.9L12 21.6l-8.1-4.65V7.05L12 2.4zM8.25 7.5v9l7.5-4.5-7.5-4.5z"/></svg> Traxsource</a>
+  </div>
+  <div style="font-size:10px;color:rgba(240,238,234,0.2);letter-spacing:0.15em;text-transform:uppercase;">Daniel Chica &copy; 2026</div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
