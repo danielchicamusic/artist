@@ -12,5 +12,5 @@ const CONFIG = {
 
   // Opcional: si configuraste DASHBOARD_SHARED_SECRET en n8n como variable de entorno,
   // pon aquí el mismo valor. Si lo dejas vacío, no se envía ninguna cabecera de seguridad.
-  DASHBOARD_SHARED_SECRET: ""
+  DASHBOARD_SHARED_SECRET: "cntrl-2026-xK9pL"
 };
