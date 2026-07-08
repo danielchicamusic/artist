@@ -290,7 +290,27 @@ button { font-family: var(--body); cursor: pointer; }
   letter-spacing: 0.06em;
   color: var(--text-dim);
   border-bottom: 1px solid var(--panel-line);
+  cursor: pointer;
 }
+.talkback-toggle {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid var(--panel-line);
+  color: var(--text-dim);
+  border-radius: 5px;
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.talkback-toggle:hover { color: var(--text); border-color: var(--text-dim); }
+.talkback.collapsed { max-height: none; }
+.talkback.collapsed .talkback-log,
+.talkback.collapsed .talkback-form { display: none; }
+.talkback.collapsed .talkback-head { border-bottom: none; }
 .mic-dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--danger);
@@ -339,11 +359,29 @@ button { font-family: var(--body); cursor: pointer; }
    RESPONSIVE
    ============================================================ */
 @media (max-width: 900px) {
-  .grid { grid-template-columns: 1fr; padding-bottom: 260px; }
+  .grid { grid-template-columns: 1fr; padding-bottom: 220px; }
   .channels { grid-column: 1; grid-row: auto; flex-direction: row; }
   .chart-panel, .events-panel, .tx-panel { grid-column: 1; grid-row: auto; }
-  .talkback { left: 16px; right: 16px; width: auto; bottom: 16px; max-height: 45vh; }
+  .talkback { left: 12px; right: 12px; width: auto; bottom: 12px; max-height: 50vh; }
   .master-date { display: none; }
+}
+
+@media (max-width: 560px) {
+  .master-bar { padding: 12px 14px; gap: 12px; }
+  .readout-value { font-size: 16px; }
+  .grid { padding: 14px 14px 200px; gap: 12px; }
+  .panel { padding: 14px; }
+  .channels { flex-direction: column; }
+  .channel-head h2 { font-size: 14px; }
+  .fader { height: 80px; }
+  .fader-track { width: 26px; }
+  .fader-track--sm { width: 14px; }
+  .channel-stats > div { font-size: 12px; }
+  .tx-table { font-size: 12px; }
+  .tx-table th, .tx-table td { padding: 6px; }
+  .talkback { left: 8px; right: 8px; bottom: 8px; max-height: 65vh; border-radius: 12px; }
+  .talkback-log { max-height: 40vh; }
+  .events-list { max-height: 160px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .fader-fill { transition: none; }
