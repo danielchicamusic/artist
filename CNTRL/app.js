@@ -119,6 +119,7 @@ async function loadAll() {
   renderChannels(transactions || []);
   renderBalance(transactions || []);
   renderChart(transactions || []);
+  renderPersonalExpenses(transactions || []);
   renderRecentTx((transactions || []).slice(0, 12));
   renderEvents(events || []);
 }
@@ -200,6 +201,36 @@ function renderEvents(events) {
       <span class="event-countdown">${countdown}</span>
     </li>`;
   }).join('');
+}
+
+function renderPersonalExpenses(transactions) {
+  const monthTx = transactions.filter(t => isThisMonth(t.transaction_date) && t.type === 'gasto' && !t.source);
+  const totals = {};
+  monthTx.forEach(t => {
+    const cat = t.personal_category || 'otro';
+    totals[cat] = (totals[cat] || 0) + Number(t.amount);
+  });
+
+  const list = document.getElementById('personal-list');
+  const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+
+  if (!entries.length) {
+    list.innerHTML = '<li class="empty-state">Sin gastos personales este mes.</li>';
+    return;
+  }
+
+  const max = Math.max(...entries.map(([, v]) => v));
+  list.innerHTML = entries.map(([cat, val]) => `
+    <li class="personal-item">
+      <div class="personal-row">
+        <span class="personal-label">${cat}</span>
+        <span class="personal-amount">${fmtMoney(val)}</span>
+      </div>
+      <div class="personal-bar-track">
+        <div class="personal-bar-fill" style="width:${Math.max(4, (val / max) * 100)}%"></div>
+      </div>
+    </li>
+  `).join('');
 }
 
 function renderChart(transactions) {
