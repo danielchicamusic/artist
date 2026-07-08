@@ -1,7 +1,7 @@
 // ============================================================
 // INIT
 // ============================================================
-const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 const els = {
   loginScreen: document.getElementById('login-screen'),
@@ -37,7 +37,7 @@ const SOURCE_LABEL = {
 // AUTH
 // ============================================================
 async function checkSession() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     showApp();
   } else {
@@ -63,7 +63,7 @@ els.loginForm.addEventListener('submit', async (e) => {
   els.loginError.textContent = '';
   els.loginSubmit.disabled = true;
   els.loginSubmit.textContent = 'Entrando…';
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error } = await sb.auth.signInWithPassword({
     email: els.loginEmail.value.trim(),
     password: els.loginPassword.value,
   });
@@ -77,7 +77,7 @@ els.loginForm.addEventListener('submit', async (e) => {
 });
 
 els.logoutBtn.addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   showLogin();
 });
 
@@ -86,8 +86,8 @@ els.logoutBtn.addEventListener('click', async () => {
 // ============================================================
 async function loadAll() {
   const [{ data: transactions, error: txErr }, { data: events, error: evErr }] = await Promise.all([
-    supabase.from('transactions').select('*').order('transaction_date', { ascending: false }).limit(500),
-    supabase.from('events').select('*').gte('event_date', new Date().toISOString()).order('event_date', { ascending: true }).limit(10),
+    sb.from('transactions').select('*').order('transaction_date', { ascending: false }).limit(500),
+    sb.from('events').select('*').gte('event_date', new Date().toISOString()).order('event_date', { ascending: true }).limit(10),
   ]);
 
   if (txErr) console.error(txErr);
@@ -225,7 +225,7 @@ function renderChart(transactions) {
 // REALTIME
 // ============================================================
 function subscribeRealtime() {
-  supabase.channel('finanzas-realtime')
+  sb.channel('finanzas-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => loadAll())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadAll())
     .subscribe();
