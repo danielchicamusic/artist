@@ -1,0 +1,278 @@
+// ============================================================
+// INIT
+// ============================================================
+const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+
+const els = {
+  loginScreen: document.getElementById('login-screen'),
+  loginForm: document.getElementById('login-form'),
+  loginEmail: document.getElementById('login-email'),
+  loginPassword: document.getElementById('login-password'),
+  loginError: document.getElementById('login-error'),
+  loginSubmit: document.getElementById('login-submit'),
+  app: document.getElementById('app'),
+  logoutBtn: document.getElementById('logout-btn'),
+  todayDate: document.getElementById('today-date'),
+  balanceTotal: document.getElementById('balance-total'),
+  chatForm: document.getElementById('chat-form'),
+  chatInput: document.getElementById('chat-input'),
+  chatLog: document.getElementById('chat-log'),
+  chatSubmit: document.getElementById('chat-submit'),
+  eventsList: document.getElementById('events-list'),
+  txBody: document.getElementById('tx-table-body'),
+};
+
+let monthlyChart = null;
+
+const fmtMoney = (n, currency = 'EUR') =>
+  new Intl.NumberFormat('es-ES', { style: 'currency', currency }).format(n || 0);
+
+const SOURCE_LABEL = {
+  desarrollo_software: { chip: 'tag-dev', label: 'Software' },
+  dj_productor: { chip: 'tag-dj', label: 'DJ' },
+  otro: { chip: 'tag-otro', label: 'Otro' },
+};
+
+// ============================================================
+// AUTH
+// ============================================================
+async function checkSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    showApp();
+  } else {
+    showLogin();
+  }
+}
+
+function showLogin() {
+  els.loginScreen.classList.remove('hidden');
+  els.app.classList.add('hidden');
+}
+
+function showApp() {
+  els.loginScreen.classList.add('hidden');
+  els.app.classList.remove('hidden');
+  els.todayDate.textContent = new Date().toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short' });
+  loadAll();
+  subscribeRealtime();
+}
+
+els.loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  els.loginError.textContent = '';
+  els.loginSubmit.disabled = true;
+  els.loginSubmit.textContent = 'Entrando…';
+  const { error } = await supabase.auth.signInWithPassword({
+    email: els.loginEmail.value.trim(),
+    password: els.loginPassword.value,
+  });
+  els.loginSubmit.disabled = false;
+  els.loginSubmit.textContent = 'Entrar';
+  if (error) {
+    els.loginError.textContent = 'No se pudo entrar: ' + error.message;
+    return;
+  }
+  showApp();
+});
+
+els.logoutBtn.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  showLogin();
+});
+
+// ============================================================
+// DATA LOADING
+// ============================================================
+async function loadAll() {
+  const [{ data: transactions, error: txErr }, { data: events, error: evErr }] = await Promise.all([
+    supabase.from('transactions').select('*').order('transaction_date', { ascending: false }).limit(500),
+    supabase.from('events').select('*').gte('event_date', new Date().toISOString()).order('event_date', { ascending: true }).limit(10),
+  ]);
+
+  if (txErr) console.error(txErr);
+  if (evErr) console.error(evErr);
+
+  renderChannels(transactions || []);
+  renderBalance(transactions || []);
+  renderChart(transactions || []);
+  renderRecentTx((transactions || []).slice(0, 12));
+  renderEvents(events || []);
+}
+
+function isThisMonth(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+}
+
+function renderChannels(transactions) {
+  const channels = ['desarrollo_software', 'dj_productor'];
+  const monthTx = transactions.filter(t => isThisMonth(t.transaction_date));
+
+  const totals = {};
+  channels.forEach(c => { totals[c] = { in: 0, out: 0 }; });
+  monthTx.forEach(t => {
+    if (!totals[t.source]) return;
+    if (t.type === 'ingreso') totals[t.source].in += Number(t.amount);
+    else totals[t.source].out += Number(t.amount);
+  });
+
+  const maxVal = Math.max(1, ...channels.map(c => Math.max(totals[c].in, totals[c].out)));
+
+  const map = { desarrollo_software: 'dev', dj_productor: 'dj' };
+  channels.forEach(c => {
+    const key = map[c];
+    const { in: inn, out } = totals[c];
+    document.getElementById(`fader-in-${key}`).style.height = `${Math.min(100, (inn / maxVal) * 100)}%`;
+    document.getElementById(`fader-out-${key}`).style.height = `${Math.min(100, (out / maxVal) * 100)}%`;
+    document.getElementById(`${key}-in`).textContent = fmtMoney(inn);
+    document.getElementById(`${key}-out`).textContent = fmtMoney(out);
+    const neto = document.getElementById(`${key}-neto`);
+    neto.textContent = fmtMoney(inn - out);
+    neto.style.color = (inn - out) >= 0 ? 'var(--accent-dev)' : 'var(--danger)';
+  });
+}
+
+function renderBalance(transactions) {
+  const total = transactions.reduce((acc, t) => acc + (t.type === 'ingreso' ? Number(t.amount) : -Number(t.amount)), 0);
+  els.balanceTotal.textContent = fmtMoney(total);
+  els.balanceTotal.style.color = total >= 0 ? 'var(--text)' : 'var(--danger)';
+}
+
+function renderRecentTx(transactions) {
+  if (!transactions.length) {
+    els.txBody.innerHTML = '<tr><td colspan="4" class="empty-state">Sin movimientos todavía.</td></tr>';
+    return;
+  }
+  els.txBody.innerHTML = transactions.map(t => {
+    const src = SOURCE_LABEL[t.source] || SOURCE_LABEL.otro;
+    const sign = t.type === 'ingreso' ? '+' : '−';
+    const cls = t.type === 'ingreso' ? 'amount-in' : 'amount-out';
+    const dateFmt = new Date(t.transaction_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
+    return `<tr>
+      <td>${dateFmt}</td>
+      <td><span class="tag-chip ${src.chip}">${src.label}</span></td>
+      <td>${t.description || '—'}</td>
+      <td class="num ${cls}">${sign} ${fmtMoney(Math.abs(t.amount), t.currency)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderEvents(events) {
+  if (!events.length) {
+    els.eventsList.innerHTML = '<li class="empty-state">Sin eventos próximos.</li>';
+    return;
+  }
+  const now = new Date();
+  els.eventsList.innerHTML = events.map(ev => {
+    const d = new Date(ev.event_date);
+    const days = Math.ceil((d - now) / (1000 * 60 * 60 * 24));
+    const countdown = days <= 0 ? 'Hoy' : `en ${days}d`;
+    return `<li class="event-item">
+      <div class="event-info">
+        <span class="event-name">${ev.event_name}</span>
+        <span class="event-venue">${ev.venue || ''} · ${d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
+      </div>
+      <span class="event-countdown">${countdown}</span>
+    </li>`;
+  }).join('');
+}
+
+function renderChart(transactions) {
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('es-ES', { month: 'short' }), in: 0, out: 0 });
+  }
+  transactions.forEach(t => {
+    const d = new Date(t.transaction_date);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    const m = months.find(m => m.key === key);
+    if (!m) return;
+    if (t.type === 'ingreso') m.in += Number(t.amount); else m.out += Number(t.amount);
+  });
+
+  const ctx = document.getElementById('monthly-chart');
+  const data = {
+    labels: months.map(m => m.label),
+    datasets: [
+      { label: 'Ingresos', data: months.map(m => m.in), backgroundColor: '#45c4b0', borderRadius: 4 },
+      { label: 'Gastos', data: months.map(m => m.out), backgroundColor: '#ff5c5c', borderRadius: 4 },
+    ],
+  };
+  if (monthlyChart) {
+    monthlyChart.data = data;
+    monthlyChart.update();
+    return;
+  }
+  monthlyChart = new Chart(ctx, {
+    type: 'bar',
+    data,
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#8a8d98', font: { family: 'Inter', size: 12 } } } },
+      scales: {
+        x: { ticks: { color: '#8a8d98' }, grid: { display: false } },
+        y: { ticks: { color: '#8a8d98' }, grid: { color: '#2a2d36' } },
+      },
+    },
+  });
+}
+
+// ============================================================
+// REALTIME
+// ============================================================
+function subscribeRealtime() {
+  supabase.channel('finanzas-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => loadAll())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadAll())
+    .subscribe();
+}
+
+// ============================================================
+// CHAT CON EL AGENTE (n8n)
+// ============================================================
+function appendMessage(text, who) {
+  const p = document.createElement('p');
+  p.className = who === 'user' ? 'user-msg' : 'agent-msg';
+  p.textContent = text;
+  els.chatLog.appendChild(p);
+  els.chatLog.scrollTop = els.chatLog.scrollHeight;
+}
+
+els.chatForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const message = els.chatInput.value.trim();
+  if (!message) return;
+  appendMessage(message, 'user');
+  els.chatInput.value = '';
+  els.chatSubmit.disabled = true;
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (CONFIG.DASHBOARD_SHARED_SECRET) headers['x-dashboard-secret'] = CONFIG.DASHBOARD_SHARED_SECRET;
+
+    const res = await fetch(CONFIG.N8N_WEBHOOK_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ message }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    appendMessage(data.reply || 'Registrado.', 'agent');
+    // el refresco real llega vía realtime, pero forzamos uno por si acaso
+    setTimeout(loadAll, 1200);
+  } catch (err) {
+    console.error(err);
+    appendMessage('No pude contactar con el agente. Revisa la URL del webhook en config.js.', 'agent');
+  } finally {
+    els.chatSubmit.disabled = false;
+  }
+});
+
+// ============================================================
+// START
+// ============================================================
+checkSession();

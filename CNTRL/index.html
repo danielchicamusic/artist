@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Consola · Finanzas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<section id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-eyebrow">CH 01 / CH 02</div>
+    <h1 class="login-title">Consola</h1>
+    <p class="login-sub">Acceso a tu panel financiero</p>
+    <form id="login-form">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" id="login-email" required autocomplete="username">
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" id="login-password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn-primary" id="login-submit">Entrar</button>
+      <p class="login-error" id="login-error"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== APP ===================== -->
+<div id="app" class="app hidden">
+
+  <!-- Master bar -->
+  <header class="master-bar">
+    <div class="master-brand">
+      <span class="dot"></span>
+      <span class="brand-text">CONSOLA</span>
+    </div>
+    <div class="master-readout">
+      <span class="readout-label">BALANCE TOTAL</span>
+      <span class="readout-value" id="balance-total">— €</span>
+    </div>
+    <div class="master-date" id="today-date">—</div>
+    <button class="btn-ghost" id="logout-btn">Salir</button>
+  </header>
+
+  <main class="grid">
+
+    <!-- Channel strips -->
+    <section class="panel channels" aria-label="Canales de ingreso">
+      <article class="channel" data-channel="desarrollo_software">
+        <div class="channel-head">
+          <span class="channel-tag">CH 01</span>
+          <h2>Desarrollo Software</h2>
+        </div>
+        <div class="fader">
+          <div class="fader-track">
+            <div class="fader-fill fader-in" id="fader-in-dev"></div>
+          </div>
+          <div class="fader-track fader-track--sm">
+            <div class="fader-fill fader-out" id="fader-out-dev"></div>
+          </div>
+        </div>
+        <dl class="channel-stats">
+          <div><dt>Ingresos (mes)</dt><dd id="dev-in">0,00 €</dd></div>
+          <div><dt>Gastos (mes)</dt><dd id="dev-out">0,00 €</dd></div>
+          <div class="neto"><dt>Neto</dt><dd id="dev-neto">0,00 €</dd></div>
+        </dl>
+      </article>
+
+      <article class="channel" data-channel="dj_productor">
+        <div class="channel-head">
+          <span class="channel-tag">CH 02</span>
+          <h2>DJ / Productor</h2>
+        </div>
+        <div class="fader">
+          <div class="fader-track">
+            <div class="fader-fill fader-in fader-in--dj" id="fader-in-dj"></div>
+          </div>
+          <div class="fader-track fader-track--sm">
+            <div class="fader-fill fader-out" id="fader-out-dj"></div>
+          </div>
+        </div>
+        <dl class="channel-stats">
+          <div><dt>Ingresos (mes)</dt><dd id="dj-in">0,00 €</dd></div>
+          <div><dt>Gastos (mes)</dt><dd id="dj-out">0,00 €</dd></div>
+          <div class="neto"><dt>Neto</dt><dd id="dj-neto">0,00 €</dd></div>
+        </dl>
+      </article>
+    </section>
+
+    <!-- Chart -->
+    <section class="panel chart-panel" aria-label="Evolución mensual">
+      <div class="panel-head">
+        <h2>Evolución (6 meses)</h2>
+      </div>
+      <canvas id="monthly-chart" height="110"></canvas>
+    </section>
+
+    <!-- Upcoming events -->
+    <section class="panel events-panel" aria-label="Próximos eventos">
+      <div class="panel-head">
+        <h2>Setlist / Próximas fechas</h2>
+      </div>
+      <ul id="events-list" class="events-list">
+        <li class="empty-state">Sin eventos próximos.</li>
+      </ul>
+    </section>
+
+    <!-- Recent transactions -->
+    <section class="panel tx-panel" aria-label="Movimientos recientes">
+      <div class="panel-head">
+        <h2>Movimientos recientes</h2>
+      </div>
+      <table class="tx-table">
+        <thead>
+          <tr><th>Fecha</th><th>Canal</th><th>Descripción</th><th class="num">Importe</th></tr>
+        </thead>
+        <tbody id="tx-table-body">
+          <tr><td colspan="4" class="empty-state">Sin movimientos todavía.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <!-- Talkback / chat with agent -->
+  <aside class="talkback" aria-label="Hablar con el agente">
+    <div class="talkback-head">
+      <span class="mic-dot"></span>
+      <span>TALKBACK — agente IA</span>
+    </div>
+    <div class="talkback-log" id="chat-log">
+      <p class="agent-msg">Cuéntame qué ingresó o qué gastaste, o si tienes un bolo nuevo. Ej: <em>"me gasté 5€ en un helado"</em>.</p>
+    </div>
+    <form id="chat-form" class="talkback-form">
+      <input type="text" id="chat-input" placeholder="Escribe aquí…" autocomplete="off" required>
+      <button type="submit" id="chat-submit">Enviar</button>
+    </form>
+  </aside>
+
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
