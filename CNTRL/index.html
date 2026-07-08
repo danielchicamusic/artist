@@ -113,6 +113,16 @@
       </ul>
     </section>
 
+    <!-- Personal expenses breakdown -->
+    <section class="panel personal-panel" aria-label="Gastos personales">
+      <div class="panel-head">
+        <h2>Gastos personales (mes)</h2>
+      </div>
+      <ul id="personal-list" class="personal-list">
+        <li class="empty-state">Sin gastos personales este mes.</li>
+      </ul>
+    </section>
+
     <!-- Recent transactions -->
     <section class="panel tx-panel" aria-label="Movimientos recientes">
       <div class="panel-head">
@@ -138,7 +148,7 @@
       <button type="button" class="talkback-toggle" id="talkback-toggle" aria-label="Ocultar chat">▾</button>
     </div>
     <div class="talkback-log" id="chat-log">
-      <p class="agent-msg">Dime que quieres agregar:</p>
+      <p class="agent-msg">Que quieres hacer?</p>
     </div>
     <form id="chat-form" class="talkback-form">
       <input type="text" id="chat-input" placeholder="Escribe aquí…" autocomplete="off" required>
