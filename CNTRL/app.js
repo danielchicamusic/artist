@@ -251,7 +251,9 @@ function subscribeRealtime() {
   sb.channel('finanzas-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => loadAll())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadAll())
-    .subscribe();
+    .subscribe((status) => {
+      console.log('[CNTRL] realtime status:', status);
+    });
 }
 
 // ============================================================
@@ -283,15 +285,19 @@ els.chatForm.addEventListener('submit', async (e) => {
       body: JSON.stringify({ message }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    appendMessage(data.reply || 'Registrado.', 'agent');
-    // el refresco real llega vía realtime, pero forzamos uno por si acaso
-    setTimeout(loadAll, 1200);
+    const raw = await res.text();
+    let data = {};
+    try { data = raw ? JSON.parse(raw) : {}; } catch (e) { console.warn('Respuesta no era JSON:', raw); }
+    appendMessage(data.reply || 'Registrado (sin confirmación de texto, revisa el dashboard).', 'agent');
   } catch (err) {
     console.error(err);
-    appendMessage('No pude contactar con el agente. Revisa la URL del webhook en config.js.', 'agent');
+    appendMessage('No pude confirmar con el agente, pero si el dato se guardó debería aparecer abajo en unos segundos.', 'agent');
   } finally {
     els.chatSubmit.disabled = false;
+    // el realtime debería refrescar solo, pero forzamos un par de reintentos por si acaso
+    loadAll();
+    setTimeout(loadAll, 1500);
+    setTimeout(loadAll, 4000);
   }
 });
 
