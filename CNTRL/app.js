@@ -24,6 +24,29 @@ const els = {
 
 let monthlyChart = null;
 
+// ============================================================
+// TOGGLE DEL CHAT (ocultar/mostrar, recuerda tu preferencia)
+// ============================================================
+const talkbackEl = document.querySelector('.talkback');
+const talkbackHead = document.getElementById('talkback-head');
+const talkbackToggle = document.getElementById('talkback-toggle');
+const CHAT_COLLAPSE_KEY = 'cntrl-chat-collapsed';
+
+function setChatCollapsed(collapsed) {
+  talkbackEl.classList.toggle('collapsed', collapsed);
+  talkbackToggle.textContent = collapsed ? '▸' : '▾';
+  talkbackToggle.setAttribute('aria-label', collapsed ? 'Mostrar chat' : 'Ocultar chat');
+  try { localStorage.setItem(CHAT_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (e) {}
+}
+
+let storedCollapsed = '0';
+try { storedCollapsed = localStorage.getItem(CHAT_COLLAPSE_KEY) || '0'; } catch (e) {}
+setChatCollapsed(storedCollapsed === '1');
+
+talkbackHead.addEventListener('click', () => {
+  setChatCollapsed(!talkbackEl.classList.contains('collapsed'));
+});
+
 const fmtMoney = (n, currency = 'EUR') =>
   new Intl.NumberFormat('es-ES', { style: 'currency', currency }).format(n || 0);
 
