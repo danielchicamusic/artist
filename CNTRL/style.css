@@ -107,6 +107,8 @@ button { font-family: var(--body); cursor: pointer; }
   background: rgba(20,21,26,0.92);
   backdrop-filter: blur(6px);
   z-index: 10;
+  flex-wrap: wrap;
+  row-gap: 10px;
 }
 .master-brand { display: flex; align-items: center; gap: 8px; }
 .master-brand .dot {
@@ -136,6 +138,8 @@ button { font-family: var(--body); cursor: pointer; }
   font-size: 10px;
   color: var(--text-dim);
 }
+.readout-in { color: var(--accent-dev); }
+.readout-out { color: var(--danger); }
 .master-date {
   margin-left: auto;
   font-family: var(--mono);
