@@ -40,7 +40,7 @@
   <header class="master-bar">
     <div class="master-brand">
       <span class="dot"></span>
-      <span class="brand-text">CNTRL</span>
+      <span class="brand-text">CONSOLA</span>
     </div>
     <div class="master-readout">
       <span class="readout-label">BALANCE TOTAL</span>
@@ -107,17 +107,15 @@
       </article>
     </section>
 
-    <!-- Chart -->
-    <section class="panel chart-panel" aria-label="Evolución mensual">
-      <div class="panel-head chart-panel-head">
-        <h2>Evolución</h2>
-        <div class="chart-nav">
-          <button type="button" id="chart-prev" class="btn-nav" aria-label="Meses anteriores">‹</button>
-          <span id="chart-range-label" class="chart-range-label">—</span>
-          <button type="button" id="chart-next" class="btn-nav" aria-label="Meses siguientes">›</button>
-        </div>
+    <!-- Personal expenses breakdown -->
+    <section class="panel personal-panel" aria-label="Gastos personales">
+      <div class="panel-head personal-panel-head">
+        <h2>Gastos personales (mes)</h2>
+        <span id="personal-total" class="personal-total">0,00 €</span>
       </div>
-      <canvas id="monthly-chart" height="110"></canvas>
+      <div id="personal-list" class="personal-channels">
+        <p class="empty-state">Sin gastos personales este mes.</p>
+      </div>
     </section>
 
     <!-- Upcoming events -->
@@ -130,15 +128,17 @@
       </ul>
     </section>
 
-    <!-- Personal expenses breakdown -->
-    <section class="panel personal-panel" aria-label="Gastos personales">
-      <div class="panel-head personal-panel-head">
-        <h2>Gastos personales (mes)</h2>
-        <span id="personal-total" class="personal-total">0,00 €</span>
+    <!-- Chart -->
+    <section class="panel chart-panel" aria-label="Evolución mensual">
+      <div class="panel-head chart-panel-head">
+        <h2>Evolución</h2>
+        <div class="chart-nav">
+          <button type="button" id="chart-prev" class="btn-nav" aria-label="Meses anteriores">‹</button>
+          <span id="chart-range-label" class="chart-range-label">—</span>
+          <button type="button" id="chart-next" class="btn-nav" aria-label="Meses siguientes">›</button>
+        </div>
       </div>
-      <div id="personal-list" class="personal-channels">
-        <p class="empty-state">Sin gastos personales este mes.</p>
-      </div>
+      <canvas id="monthly-chart" height="110"></canvas>
     </section>
 
     <!-- Recent transactions -->
