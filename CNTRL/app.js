@@ -24,29 +24,6 @@ const els = {
 
 let monthlyChart = null;
 
-// ============================================================
-// TOGGLE DEL CHAT (ocultar/mostrar, recuerda tu preferencia)
-// ============================================================
-const talkbackEl = document.querySelector('.talkback');
-const talkbackHead = document.getElementById('talkback-head');
-const talkbackToggle = document.getElementById('talkback-toggle');
-const CHAT_COLLAPSE_KEY = 'cntrl-chat-collapsed';
-
-function setChatCollapsed(collapsed) {
-  talkbackEl.classList.toggle('collapsed', collapsed);
-  talkbackToggle.textContent = collapsed ? '▸' : '▾';
-  talkbackToggle.setAttribute('aria-label', collapsed ? 'Mostrar chat' : 'Ocultar chat');
-  try { localStorage.setItem(CHAT_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (e) {}
-}
-
-let storedCollapsed = '0';
-try { storedCollapsed = localStorage.getItem(CHAT_COLLAPSE_KEY) || '0'; } catch (e) {}
-setChatCollapsed(storedCollapsed === '1');
-
-talkbackHead.addEventListener('click', () => {
-  setChatCollapsed(!talkbackEl.classList.contains('collapsed'));
-});
-
 const fmtMoney = (n, currency = 'EUR') =>
   new Intl.NumberFormat('es-ES', { style: 'currency', currency }).format(n || 0);
 
@@ -109,7 +86,7 @@ els.logoutBtn.addEventListener('click', async () => {
 // ============================================================
 async function loadAll() {
   const [{ data: transactions, error: txErr }, { data: events, error: evErr }] = await Promise.all([
-    sb.from('transactions').select('*').order('transaction_date', { ascending: false }).limit(500),
+    sb.from('transactions').select('*').order('created_at', { ascending: false }).limit(500),
     sb.from('events').select('*').gte('event_date', new Date().toISOString()).order('event_date', { ascending: true }).limit(10),
   ]);
 
@@ -119,7 +96,6 @@ async function loadAll() {
   renderChannels(transactions || []);
   renderBalance(transactions || []);
   renderChart(transactions || []);
-  renderPersonalExpenses(transactions || []);
   renderRecentTx((transactions || []).slice(0, 12));
   renderEvents(events || []);
 }
@@ -203,36 +179,6 @@ function renderEvents(events) {
   }).join('');
 }
 
-function renderPersonalExpenses(transactions) {
-  const monthTx = transactions.filter(t => isThisMonth(t.transaction_date) && t.type === 'gasto' && !t.source);
-  const totals = {};
-  monthTx.forEach(t => {
-    const cat = t.personal_category || 'otro';
-    totals[cat] = (totals[cat] || 0) + Number(t.amount);
-  });
-
-  const list = document.getElementById('personal-list');
-  const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
-
-  if (!entries.length) {
-    list.innerHTML = '<li class="empty-state">Sin gastos personales este mes.</li>';
-    return;
-  }
-
-  const max = Math.max(...entries.map(([, v]) => v));
-  list.innerHTML = entries.map(([cat, val]) => `
-    <li class="personal-item">
-      <div class="personal-row">
-        <span class="personal-label">${cat}</span>
-        <span class="personal-amount">${fmtMoney(val)}</span>
-      </div>
-      <div class="personal-bar-track">
-        <div class="personal-bar-fill" style="width:${Math.max(4, (val / max) * 100)}%"></div>
-      </div>
-    </li>
-  `).join('');
-}
-
 function renderChart(transactions) {
   const months = [];
   const now = new Date();
@@ -282,9 +228,7 @@ function subscribeRealtime() {
   sb.channel('finanzas-realtime')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => loadAll())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadAll())
-    .subscribe((status) => {
-      console.log('[CNTRL] realtime status:', status);
-    });
+    .subscribe();
 }
 
 // ============================================================
@@ -316,19 +260,15 @@ els.chatForm.addEventListener('submit', async (e) => {
       body: JSON.stringify({ message }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const raw = await res.text();
-    let data = {};
-    try { data = raw ? JSON.parse(raw) : {}; } catch (e) { console.warn('Respuesta no era JSON:', raw); }
-    appendMessage(data.reply || 'Registrado (sin confirmación de texto, revisa el dashboard).', 'agent');
+    const data = await res.json();
+    appendMessage(data.reply || 'Registrado.', 'agent');
+    // el refresco real llega vía realtime, pero forzamos uno por si acaso
+    setTimeout(loadAll, 1200);
   } catch (err) {
     console.error(err);
-    appendMessage('No pude confirmar con el agente, pero si el dato se guardó debería aparecer abajo en unos segundos.', 'agent');
+    appendMessage('No pude contactar con el agente. Revisa la URL del webhook en config.js.', 'agent');
   } finally {
     els.chatSubmit.disabled = false;
-    // el realtime debería refrescar solo, pero forzamos un par de reintentos por si acaso
-    loadAll();
-    setTimeout(loadAll, 1500);
-    setTimeout(loadAll, 4000);
   }
 });
 
