@@ -17,7 +17,7 @@
   <div class="login-card">
     <div class="login-eyebrow">CH 01 / CH 02</div>
     <h1 class="login-title">CNTRL</h1>
-    <p class="login-sub">Acceso a tu panel financiero</p>
+    <p class="login-sub">Acceso a tu panel</p>
     <form id="login-form">
       <label class="field">
         <span>Email</span>
@@ -46,6 +46,15 @@
       <span class="readout-label">BALANCE TOTAL</span>
       <span class="readout-value" id="balance-total">— €</span>
       <span class="readout-sub" id="spend-ratio"></span>
+    </div>
+    <div class="master-readout">
+      <span class="readout-label">INGRESOS TOTALES</span>
+      <span class="readout-value readout-in" id="income-total">— €</span>
+    </div>
+    <div class="master-readout">
+      <span class="readout-label">GASTOS TOTALES</span>
+      <span class="readout-value readout-out" id="expense-total">— €</span>
+      <span class="readout-sub" id="expense-ratio"></span>
     </div>
     <div class="master-date" id="today-date">—</div>
     <button class="btn-ghost" id="logout-btn">Salir</button>
