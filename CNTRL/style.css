@@ -67,7 +67,7 @@ button { font-family: var(--body); cursor: pointer; }
   border-radius: 8px;
   padding: 10px 12px;
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
 }
 .field input:focus { outline: 2px solid var(--accent-dev); outline-offset: 1px; }
 .btn-primary {
@@ -131,6 +131,11 @@ button { font-family: var(--body); cursor: pointer; }
   font-size: 20px;
   font-weight: 700;
 }
+.readout-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
 .master-date {
   margin-left: auto;
   font-family: var(--mono);
@@ -160,6 +165,10 @@ button { font-family: var(--body); cursor: pointer; }
 .panel-head { margin-bottom: 12px; }
 .panel-head h2 { font-size: 15px; font-weight: 600; }
 .chart-panel-head { display: flex; align-items: center; justify-content: space-between; }
+.personal-panel-head { display: flex; align-items: center; justify-content: space-between; }
+.personal-total {
+  font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--danger);
+}
 .chart-nav { display: flex; align-items: center; gap: 8px; }
 .chart-range-label {
   font-family: var(--mono); font-size: 11px; color: var(--text-dim); min-width: 88px; text-align: center;
@@ -224,6 +233,7 @@ button { font-family: var(--body); cursor: pointer; }
 .channel-stats dt { color: var(--text-dim); font-weight: 400; margin: 0; }
 .channel-stats dd { font-family: var(--mono); margin: 0; }
 .channel-stats .neto dd { font-weight: 700; font-size: 15px; }
+.pct-row dd { color: var(--text-dim); font-size: 12px; }
 
 /* ============================================================
    PERSONAL EXPENSES (mini channel strips)
@@ -259,6 +269,9 @@ button { font-family: var(--body); cursor: pointer; }
 }
 .personal-amount {
   font-family: var(--mono); font-size: 12px; color: var(--text); font-weight: 600;
+}
+.personal-pct {
+  font-family: var(--mono); font-size: 10px; color: var(--text-dim);
 }
 
 /* ============================================================
@@ -391,7 +404,7 @@ button { font-family: var(--body); cursor: pointer; }
   border: none;
   padding: 12px 14px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 16px;
 }
 .talkback-form input:focus { outline: none; }
 .talkback-form button {
