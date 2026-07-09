@@ -158,7 +158,15 @@ function renderChannels(transactions) {
     const neto = document.getElementById(`${key}-neto`);
     neto.textContent = fmtMoney(inn - out);
     neto.style.color = (inn - out) >= 0 ? 'var(--accent-dev)' : 'var(--danger)';
+    const pctEl = document.getElementById(`${key}-pct`);
+    pctEl.textContent = inn > 0 ? `${Math.round((out / inn) * 100)}%` : '—';
   });
+
+  // % global gastado sobre ingresado (todos los canales + personal, mes actual)
+  const totalIn = monthTx.filter(t => t.type === 'ingreso').reduce((a, t) => a + Number(t.amount), 0);
+  const totalOut = monthTx.filter(t => t.type === 'gasto').reduce((a, t) => a + Number(t.amount), 0);
+  const spendRatioEl = document.getElementById('spend-ratio');
+  spendRatioEl.textContent = totalIn > 0 ? `${Math.round((totalOut / totalIn) * 100)}% del ingreso del mes ya gastado` : '';
 }
 
 function renderBalance(transactions) {
@@ -215,7 +223,10 @@ function renderPersonalExpenses(transactions) {
   });
 
   const container = document.getElementById('personal-list');
+  const totalEl = document.getElementById('personal-total');
   const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  const grandTotal = entries.reduce((acc, [, v]) => acc + v, 0);
+  totalEl.textContent = fmtMoney(grandTotal);
 
   if (!entries.length) {
     container.innerHTML = '<p class="empty-state">Sin gastos personales este mes.</p>';
@@ -230,6 +241,7 @@ function renderPersonalExpenses(transactions) {
       </div>
       <span class="personal-label">${cat}</span>
       <span class="personal-amount">${fmtMoney(val)}</span>
+      <span class="personal-pct">${grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0}%</span>
     </div>
   `).join('');
 }
