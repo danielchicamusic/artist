@@ -17,7 +17,7 @@
   <div class="login-card">
     <div class="login-eyebrow">CH 01 / CH 02</div>
     <h1 class="login-title">CNTRL</h1>
-    <p class="login-sub">Acceso a tu panel </p>
+    <p class="login-sub">Acceso a tu panel financiero</p>
     <form id="login-form">
       <label class="field">
         <span>Email</span>
@@ -45,6 +45,7 @@
     <div class="master-readout">
       <span class="readout-label">BALANCE TOTAL</span>
       <span class="readout-value" id="balance-total">— €</span>
+      <span class="readout-sub" id="spend-ratio"></span>
     </div>
     <div class="master-date" id="today-date">—</div>
     <button class="btn-ghost" id="logout-btn">Salir</button>
@@ -71,6 +72,7 @@
           <div><dt>Ingresos (mes)</dt><dd id="dev-in">0,00 €</dd></div>
           <div><dt>Gastos (mes)</dt><dd id="dev-out">0,00 €</dd></div>
           <div class="neto"><dt>Neto</dt><dd id="dev-neto">0,00 €</dd></div>
+          <div class="pct-row"><dt>Gastado / ingresado</dt><dd id="dev-pct">—</dd></div>
         </dl>
       </article>
 
@@ -91,6 +93,7 @@
           <div><dt>Ingresos (mes)</dt><dd id="dj-in">0,00 €</dd></div>
           <div><dt>Gastos (mes)</dt><dd id="dj-out">0,00 €</dd></div>
           <div class="neto"><dt>Neto</dt><dd id="dj-neto">0,00 €</dd></div>
+          <div class="pct-row"><dt>Gastado / ingresado</dt><dd id="dj-pct">—</dd></div>
         </dl>
       </article>
     </section>
@@ -120,8 +123,9 @@
 
     <!-- Personal expenses breakdown -->
     <section class="panel personal-panel" aria-label="Gastos personales">
-      <div class="panel-head">
+      <div class="panel-head personal-panel-head">
         <h2>Gastos personales (mes)</h2>
+        <span id="personal-total" class="personal-total">0,00 €</span>
       </div>
       <div id="personal-list" class="personal-channels">
         <p class="empty-state">Sin gastos personales este mes.</p>
