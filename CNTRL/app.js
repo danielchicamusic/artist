@@ -1,373 +1,182 @@
-// ============================================================
-// INIT
-// ============================================================
-const sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CNTRL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-const els = {
-  loginScreen: document.getElementById('login-screen'),
-  loginForm: document.getElementById('login-form'),
-  loginEmail: document.getElementById('login-email'),
-  loginPassword: document.getElementById('login-password'),
-  loginError: document.getElementById('login-error'),
-  loginSubmit: document.getElementById('login-submit'),
-  app: document.getElementById('app'),
-  logoutBtn: document.getElementById('logout-btn'),
-  todayDate: document.getElementById('today-date'),
-  balanceTotal: document.getElementById('balance-total'),
-  chatForm: document.getElementById('chat-form'),
-  chatInput: document.getElementById('chat-input'),
-  chatLog: document.getElementById('chat-log'),
-  chatSubmit: document.getElementById('chat-submit'),
-  eventsList: document.getElementById('events-list'),
-  txBody: document.getElementById('tx-table-body'),
-};
+<!-- ===================== LOGIN ===================== -->
+<section id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-eyebrow">CH 01 / CH 02</div>
+    <h1 class="login-title">CNTRL</h1>
+    <p class="login-sub">Acceso a tu panel</p>
+    <form id="login-form">
+      <label class="field">
+        <span>Email</span>
+        <input type="email" id="login-email" required autocomplete="username">
+      </label>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" id="login-password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn-primary" id="login-submit">Entrar</button>
+      <p class="login-error" id="login-error"></p>
+    </form>
+  </div>
+</section>
 
-let monthlyChart = null;
-let chartOffset = 0;       // 0 = últimos 6 meses terminando en el actual; +1 = 6 meses más atrás, etc.
-let allTransactionsCache = [];
+<!-- ===================== APP ===================== -->
+<div id="app" class="app hidden">
 
-// ============================================================
-// TOGGLE DEL CHAT (ocultar/mostrar, recuerda tu preferencia)
-// ============================================================
-const talkbackEl = document.querySelector('.talkback');
-const talkbackHead = document.getElementById('talkback-head');
-const talkbackToggle = document.getElementById('talkback-toggle');
-const CHAT_COLLAPSE_KEY = 'cntrl-chat-collapsed';
-
-function setChatCollapsed(collapsed) {
-  talkbackEl.classList.toggle('collapsed', collapsed);
-  talkbackToggle.textContent = collapsed ? '▸' : '▾';
-  talkbackToggle.setAttribute('aria-label', collapsed ? 'Mostrar chat' : 'Ocultar chat');
-  try { localStorage.setItem(CHAT_COLLAPSE_KEY, collapsed ? '1' : '0'); } catch (e) {}
-}
-
-let storedCollapsed = '0';
-try { storedCollapsed = localStorage.getItem(CHAT_COLLAPSE_KEY) || '0'; } catch (e) {}
-setChatCollapsed(storedCollapsed === '1');
-
-talkbackHead.addEventListener('click', () => {
-  setChatCollapsed(!talkbackEl.classList.contains('collapsed'));
-});
-
-const fmtMoney = (n, currency = 'EUR') =>
-  new Intl.NumberFormat('es-ES', { style: 'currency', currency }).format(n || 0);
-
-const SOURCE_LABEL = {
-  desarrollo_software: { chip: 'tag-dev', label: 'Ingeniería' },
-  dj_productor: { chip: 'tag-dj', label: 'Music Life' },
-  otro: { chip: 'tag-otro', label: 'Otro' },
-};
-
-// ============================================================
-// AUTH
-// ============================================================
-async function checkSession() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    showApp();
-  } else {
-    showLogin();
-  }
-}
-
-function showLogin() {
-  els.loginScreen.classList.remove('hidden');
-  els.app.classList.add('hidden');
-}
-
-function showApp() {
-  els.loginScreen.classList.add('hidden');
-  els.app.classList.remove('hidden');
-  els.todayDate.textContent = new Date().toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short' });
-  loadAll();
-  subscribeRealtime();
-}
-
-els.loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  els.loginError.textContent = '';
-  els.loginSubmit.disabled = true;
-  els.loginSubmit.textContent = 'Entrando…';
-  const { error } = await sb.auth.signInWithPassword({
-    email: els.loginEmail.value.trim(),
-    password: els.loginPassword.value,
-  });
-  els.loginSubmit.disabled = false;
-  els.loginSubmit.textContent = 'Entrar';
-  if (error) {
-    els.loginError.textContent = 'No se pudo entrar: ' + error.message;
-    return;
-  }
-  showApp();
-});
-
-els.logoutBtn.addEventListener('click', async () => {
-  await sb.auth.signOut();
-  showLogin();
-});
-
-// ============================================================
-// DATA LOADING
-// ============================================================
-async function loadAll() {
-  const [{ data: transactions, error: txErr }, { data: events, error: evErr }] = await Promise.all([
-    sb.from('transactions').select('*').order('created_at', { ascending: false }).limit(500),
-    sb.from('events').select('*').gte('event_date', new Date().toISOString()).order('event_date', { ascending: true }).limit(10),
-  ]);
-
-  if (txErr) console.error(txErr);
-  if (evErr) console.error(evErr);
-
-  renderChannels(transactions || []);
-  renderBalance(transactions || []);
-  allTransactionsCache = transactions || [];
-  renderChart(allTransactionsCache);
-  renderPersonalExpenses(transactions || []);
-  renderRecentTx((transactions || []).slice(0, 12));
-  renderEvents(events || []);
-}
-
-function isThisMonth(dateStr) {
-  const d = new Date(dateStr);
-  const now = new Date();
-  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-}
-
-function renderChannels(transactions) {
-  const channels = ['desarrollo_software', 'dj_productor'];
-  const monthTx = transactions.filter(t => isThisMonth(t.transaction_date));
-
-  const totals = {};
-  channels.forEach(c => { totals[c] = { in: 0, out: 0 }; });
-  monthTx.forEach(t => {
-    if (!totals[t.source]) return;
-    if (t.type === 'ingreso') totals[t.source].in += Number(t.amount);
-    else totals[t.source].out += Number(t.amount);
-  });
-
-  const maxVal = Math.max(1, ...channels.map(c => Math.max(totals[c].in, totals[c].out)));
-
-  const map = { desarrollo_software: 'dev', dj_productor: 'dj' };
-  channels.forEach(c => {
-    const key = map[c];
-    const { in: inn, out } = totals[c];
-    document.getElementById(`fader-in-${key}`).style.height = `${Math.min(100, (inn / maxVal) * 100)}%`;
-    document.getElementById(`fader-out-${key}`).style.height = `${Math.min(100, (out / maxVal) * 100)}%`;
-    document.getElementById(`${key}-in`).textContent = fmtMoney(inn);
-    document.getElementById(`${key}-out`).textContent = fmtMoney(out);
-    const neto = document.getElementById(`${key}-neto`);
-    neto.textContent = fmtMoney(inn - out);
-    neto.style.color = (inn - out) >= 0 ? 'var(--accent-dev)' : 'var(--danger)';
-    const pctEl = document.getElementById(`${key}-pct`);
-    pctEl.textContent = inn > 0 ? `${Math.round((out / inn) * 100)}%` : '—';
-  });
-
-  // % global gastado sobre ingresado (todos los canales + personal, mes actual)
-  const totalIn = monthTx.filter(t => t.type === 'ingreso').reduce((a, t) => a + Number(t.amount), 0);
-  const totalOut = monthTx.filter(t => t.type === 'gasto').reduce((a, t) => a + Number(t.amount), 0);
-  const spendRatioEl = document.getElementById('spend-ratio');
-  spendRatioEl.textContent = totalIn > 0 ? `${Math.round((totalOut / totalIn) * 100)}% del ingreso del mes ya gastado` : '';
-}
-
-function renderBalance(transactions) {
-  const totalIncome = transactions.filter(t => t.type === 'ingreso').reduce((a, t) => a + Number(t.amount), 0);
-  const totalExpense = transactions.filter(t => t.type === 'gasto').reduce((a, t) => a + Number(t.amount), 0);
-  const total = totalIncome - totalExpense;
-
-  els.balanceTotal.textContent = fmtMoney(total);
-  els.balanceTotal.style.color = total >= 0 ? 'var(--text)' : 'var(--danger)';
-
-  document.getElementById('income-total').textContent = fmtMoney(totalIncome);
-  document.getElementById('expense-total').textContent = fmtMoney(totalExpense);
-  document.getElementById('expense-ratio').textContent =
-    totalIncome > 0 ? `${Math.round((totalExpense / totalIncome) * 100)}% del ingreso total` : '';
-}
-
-function renderRecentTx(transactions) {
-  if (!transactions.length) {
-    els.txBody.innerHTML = '<tr><td colspan="4" class="empty-state">Sin movimientos todavía.</td></tr>';
-    return;
-  }
-  els.txBody.innerHTML = transactions.map(t => {
-    const src = SOURCE_LABEL[t.source] || SOURCE_LABEL.otro;
-    const sign = t.type === 'ingreso' ? '+' : '−';
-    const cls = t.type === 'ingreso' ? 'amount-in' : 'amount-out';
-    const dateFmt = new Date(t.transaction_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' });
-    return `<tr>
-      <td>${dateFmt}</td>
-      <td><span class="tag-chip ${src.chip}">${src.label}</span></td>
-      <td>${t.description || '—'}</td>
-      <td class="num ${cls}">${sign} ${fmtMoney(Math.abs(t.amount), t.currency)}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderEvents(events) {
-  if (!events.length) {
-    els.eventsList.innerHTML = '<li class="empty-state">Sin eventos próximos.</li>';
-    return;
-  }
-  const now = new Date();
-  els.eventsList.innerHTML = events.map(ev => {
-    const d = new Date(ev.event_date);
-    const days = Math.ceil((d - now) / (1000 * 60 * 60 * 24));
-    const countdown = days <= 0 ? 'Hoy' : `en ${days}d`;
-    return `<li class="event-item">
-      <div class="event-info">
-        <span class="event-name">${ev.event_name}</span>
-        <span class="event-venue">${ev.venue || ''} · ${d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</span>
-      </div>
-      <span class="event-countdown">${countdown}</span>
-    </li>`;
-  }).join('');
-}
-
-function renderPersonalExpenses(transactions) {
-  const monthTx = transactions.filter(t => isThisMonth(t.transaction_date) && t.type === 'gasto' && !t.source);
-  const totals = {};
-  monthTx.forEach(t => {
-    const cat = t.personal_category || 'otro';
-    totals[cat] = (totals[cat] || 0) + Number(t.amount);
-  });
-
-  const container = document.getElementById('personal-list');
-  const totalEl = document.getElementById('personal-total');
-  const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
-  const grandTotal = entries.reduce((acc, [, v]) => acc + v, 0);
-  totalEl.textContent = fmtMoney(grandTotal);
-
-  if (!entries.length) {
-    container.innerHTML = '<p class="empty-state">Sin gastos personales este mes.</p>';
-    return;
-  }
-
-  const max = Math.max(...entries.map(([, v]) => v));
-  container.innerHTML = entries.map(([cat, val]) => `
-    <div class="personal-channel">
-      <div class="personal-fader-track">
-        <div class="personal-fader-fill" style="height:${Math.max(4, (val / max) * 100)}%"></div>
-      </div>
-      <span class="personal-label">${cat}</span>
-      <span class="personal-amount">${fmtMoney(val)}</span>
-      <span class="personal-pct">${grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0}%</span>
+  <!-- Master bar -->
+  <header class="master-bar">
+    <div class="master-brand">
+      <span class="dot"></span>
+      <span class="brand-text">CNTRL</span>
     </div>
-  `).join('');
-}
+    <div class="master-readout">
+      <span class="readout-label">BALANCE TOTAL</span>
+      <span class="readout-value" id="balance-total">— €</span>
+      <span class="readout-sub" id="spend-ratio"></span>
+    </div>
+    <div class="master-readout">
+      <span class="readout-label">INGRESOS TOTALES</span>
+      <span class="readout-value readout-in" id="income-total">— €</span>
+    </div>
+    <div class="master-readout">
+      <span class="readout-label">GASTOS TOTALES</span>
+      <span class="readout-value readout-out" id="expense-total">— €</span>
+      <span class="readout-sub" id="expense-ratio"></span>
+    </div>
+    <div class="master-date" id="today-date">—</div>
+    <button class="btn-ghost" id="logout-btn">Salir</button>
+  </header>
 
-function renderChart(transactions) {
-  const months = [];
-  const now = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - chartOffset * 6 - i, 1);
-    months.push({ key: `${d.getFullYear()}-${d.getMonth()}`, label: d.toLocaleDateString('es-ES', { month: 'short' }), year: d.getFullYear(), in: 0, out: 0 });
-  }
-  transactions.forEach(t => {
-    const d = new Date(t.transaction_date);
-    const key = `${d.getFullYear()}-${d.getMonth()}`;
-    const m = months.find(m => m.key === key);
-    if (!m) return;
-    if (t.type === 'ingreso') m.in += Number(t.amount); else m.out += Number(t.amount);
-  });
+  <main class="grid">
 
-  const rangeLabel = document.getElementById('chart-range-label');
-  rangeLabel.textContent = `${months[0].label} – ${months[5].label} ${months[5].year}`;
-  document.getElementById('chart-next').disabled = chartOffset === 0;
+    <!-- Channel strips -->
+    <section class="panel channels" aria-label="Canales de ingreso">
+      <article class="channel" data-channel="desarrollo_software">
+        <div class="channel-head">
+          <span class="channel-tag">CH 01</span>
+          <h2>Ingeniería &amp; Desarrollo</h2>
+        </div>
+        <div class="fader">
+          <div class="fader-track">
+            <div class="fader-fill fader-in" id="fader-in-dev"></div>
+          </div>
+          <div class="fader-track fader-track--sm">
+            <div class="fader-fill fader-out" id="fader-out-dev"></div>
+          </div>
+        </div>
+        <dl class="channel-stats">
+          <div><dt>Ingresos (mes)</dt><dd id="dev-in">0,00 €</dd></div>
+          <div><dt>Gastos (mes)</dt><dd id="dev-out">0,00 €</dd></div>
+          <div class="neto"><dt>Neto</dt><dd id="dev-neto">0,00 €</dd></div>
+          <div class="pct-row"><dt>Gastado / ingresado</dt><dd id="dev-pct">—</dd></div>
+        </dl>
+      </article>
 
-  const ctx = document.getElementById('monthly-chart');
-  const data = {
-    labels: months.map(m => m.label),
-    datasets: [
-      { label: 'Ingresos', data: months.map(m => m.in), backgroundColor: '#45c4b0', borderRadius: 4 },
-      { label: 'Gastos', data: months.map(m => m.out), backgroundColor: '#ff5c5c', borderRadius: 4 },
-    ],
-  };
-  if (monthlyChart) {
-    monthlyChart.data = data;
-    monthlyChart.update();
-    return;
-  }
-  monthlyChart = new Chart(ctx, {
-    type: 'bar',
-    data,
-    options: {
-      responsive: true,
-      plugins: { legend: { labels: { color: '#8a8d98', font: { family: 'Inter', size: 12 } } } },
-      scales: {
-        x: { ticks: { color: '#8a8d98' }, grid: { display: false } },
-        y: { ticks: { color: '#8a8d98' }, grid: { color: '#2a2d36' } },
-      },
-    },
-  });
-}
+      <article class="channel" data-channel="dj_productor">
+        <div class="channel-head">
+          <span class="channel-tag">CH 02</span>
+          <h2>Music Life</h2>
+        </div>
+        <div class="fader">
+          <div class="fader-track">
+            <div class="fader-fill fader-in fader-in--dj" id="fader-in-dj"></div>
+          </div>
+          <div class="fader-track fader-track--sm">
+            <div class="fader-fill fader-out" id="fader-out-dj"></div>
+          </div>
+        </div>
+        <dl class="channel-stats">
+          <div><dt>Ingresos (mes)</dt><dd id="dj-in">0,00 €</dd></div>
+          <div><dt>Gastos (mes)</dt><dd id="dj-out">0,00 €</dd></div>
+          <div class="neto"><dt>Neto</dt><dd id="dj-neto">0,00 €</dd></div>
+          <div class="pct-row"><dt>Gastado / ingresado</dt><dd id="dj-pct">—</dd></div>
+        </dl>
+      </article>
+    </section>
 
-document.getElementById('chart-prev').addEventListener('click', () => {
-  chartOffset += 1;
-  renderChart(allTransactionsCache);
-});
-document.getElementById('chart-next').addEventListener('click', () => {
-  if (chartOffset === 0) return;
-  chartOffset -= 1;
-  renderChart(allTransactionsCache);
-});
+    <!-- Chart -->
+    <section class="panel chart-panel" aria-label="Evolución mensual">
+      <div class="panel-head chart-panel-head">
+        <h2>Evolución</h2>
+        <div class="chart-nav">
+          <button type="button" id="chart-prev" class="btn-nav" aria-label="Meses anteriores">‹</button>
+          <span id="chart-range-label" class="chart-range-label">—</span>
+          <button type="button" id="chart-next" class="btn-nav" aria-label="Meses siguientes">›</button>
+        </div>
+      </div>
+      <canvas id="monthly-chart" height="110"></canvas>
+    </section>
 
-// ============================================================
-// REALTIME
-// ============================================================
-function subscribeRealtime() {
-  sb.channel('finanzas-realtime')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => loadAll())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => loadAll())
-    .subscribe((status) => {
-      console.log('[CNTRL] realtime status:', status);
-    });
-}
+    <!-- Upcoming events -->
+    <section class="panel events-panel" aria-label="Próximos eventos">
+      <div class="panel-head">
+        <h2>Setlist / Próximas fechas</h2>
+      </div>
+      <ul id="events-list" class="events-list">
+        <li class="empty-state">Sin eventos próximos.</li>
+      </ul>
+    </section>
 
-// ============================================================
-// CHAT CON EL AGENTE (n8n)
-// ============================================================
-function appendMessage(text, who) {
-  const p = document.createElement('p');
-  p.className = who === 'user' ? 'user-msg' : 'agent-msg';
-  p.textContent = text;
-  els.chatLog.appendChild(p);
-  els.chatLog.scrollTop = els.chatLog.scrollHeight;
-}
+    <!-- Personal expenses breakdown -->
+    <section class="panel personal-panel" aria-label="Gastos personales">
+      <div class="panel-head personal-panel-head">
+        <h2>Gastos personales (mes)</h2>
+        <span id="personal-total" class="personal-total">0,00 €</span>
+      </div>
+      <div id="personal-list" class="personal-channels">
+        <p class="empty-state">Sin gastos personales este mes.</p>
+      </div>
+    </section>
 
-els.chatForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const message = els.chatInput.value.trim();
-  if (!message) return;
-  appendMessage(message, 'user');
-  els.chatInput.value = '';
-  els.chatSubmit.disabled = true;
+    <!-- Recent transactions -->
+    <section class="panel tx-panel" aria-label="Movimientos recientes">
+      <div class="panel-head">
+        <h2>Movimientos recientes</h2>
+      </div>
+      <table class="tx-table">
+        <thead>
+          <tr><th>Fecha</th><th>Canal</th><th>Descripción</th><th class="num">Importe</th></tr>
+        </thead>
+        <tbody id="tx-table-body">
+          <tr><td colspan="4" class="empty-state">Sin movimientos todavía.</td></tr>
+        </tbody>
+      </table>
+    </section>
 
-  try {
-    const headers = { 'Content-Type': 'application/json' };
-    if (CONFIG.DASHBOARD_SHARED_SECRET) headers['x-dashboard-secret'] = CONFIG.DASHBOARD_SHARED_SECRET;
+  </main>
 
-    const res = await fetch(CONFIG.N8N_WEBHOOK_URL, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ message }),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const raw = await res.text();
-    let data = {};
-    try { data = raw ? JSON.parse(raw) : {}; } catch (e) { console.warn('Respuesta no era JSON:', raw); }
-    appendMessage(data.reply || 'Registrado (sin confirmación de texto, revisa el dashboard).', 'agent');
-  } catch (err) {
-    console.error(err);
-    appendMessage('No pude confirmar con el agente, pero si el dato se guardó debería aparecer abajo en unos segundos.', 'agent');
-  } finally {
-    els.chatSubmit.disabled = false;
-    // el realtime debería refrescar solo, pero forzamos un par de reintentos por si acaso
-    loadAll();
-    setTimeout(loadAll, 1500);
-    setTimeout(loadAll, 4000);
-  }
-});
+  <!-- Talkback / chat with agent -->
+  <aside class="talkback" aria-label="Hablar con el agente">
+    <div class="talkback-head" id="talkback-head">
+      <span class="mic-dot"></span>
+      <span>TALKBACK — agente IA</span>
+      <button type="button" class="talkback-toggle" id="talkback-toggle" aria-label="Ocultar chat">▾</button>
+    </div>
+    <div class="talkback-log" id="chat-log">
+      <p class="agent-msg">Dime ingreso / gasto para apuntarlo.</p>
+    </div>
+    <form id="chat-form" class="talkback-form">
+      <input type="text" id="chat-input" placeholder="Escribe aquí…" autocomplete="off" required>
+      <button type="submit" id="chat-submit">Enviar</button>
+    </form>
+  </aside>
 
-// ============================================================
-// START
-// ============================================================
-checkSession();
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
