@@ -170,9 +170,17 @@ function renderChannels(transactions) {
 }
 
 function renderBalance(transactions) {
-  const total = transactions.reduce((acc, t) => acc + (t.type === 'ingreso' ? Number(t.amount) : -Number(t.amount)), 0);
+  const totalIncome = transactions.filter(t => t.type === 'ingreso').reduce((a, t) => a + Number(t.amount), 0);
+  const totalExpense = transactions.filter(t => t.type === 'gasto').reduce((a, t) => a + Number(t.amount), 0);
+  const total = totalIncome - totalExpense;
+
   els.balanceTotal.textContent = fmtMoney(total);
   els.balanceTotal.style.color = total >= 0 ? 'var(--text)' : 'var(--danger)';
+
+  document.getElementById('income-total').textContent = fmtMoney(totalIncome);
+  document.getElementById('expense-total').textContent = fmtMoney(totalExpense);
+  document.getElementById('expense-ratio').textContent =
+    totalIncome > 0 ? `${Math.round((totalExpense / totalIncome) * 100)}% del ingreso total` : '';
 }
 
 function renderRecentTx(transactions) {
