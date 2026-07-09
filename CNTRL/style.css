@@ -186,9 +186,9 @@ button { font-family: var(--body); cursor: pointer; }
 .btn-nav:disabled { opacity: 0.35; cursor: default; }
 
 .channels { grid-column: 1; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 16px; }
-.chart-panel { grid-column: 2; grid-row: 1; }
+.personal-panel { grid-column: 2; grid-row: 1; }
 .events-panel { grid-column: 2; grid-row: 2; }
-.personal-panel { grid-column: 2; grid-row: 3; }
+.chart-panel { grid-column: 2; grid-row: 3; }
 .tx-panel { grid-column: 1 / 3; grid-row: 4; }
 
 /* ============================================================
