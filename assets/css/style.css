@@ -42,7 +42,7 @@ body:hover .cursor { opacity: 1; }
 .hero-eyebrow::before { content: ''; width: 40px; height: 1px; background: var(--teal); }
 .hero-name { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 0.75rem; }
 .hero-iso { height: 80px; width: auto; }
-.hero-wordmark { height: 52px; width: auto; }
+.hero-wordmark { height: 30px; width: auto; }
 .hero-sub { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(240,238,234,0.5); margin-bottom: 2rem; }
 .hero-stats { display: flex; gap: 3rem; }
 .hstat-val { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
@@ -91,17 +91,67 @@ section { padding: 7rem 3rem; border-bottom: 1px solid var(--border); }
 .dj-tag.ft { border-color: rgba(45,212,191,0.4); color: rgba(240,238,234,0.85); font-weight: 500; }
 
 /* UPCOMING DATES */
-.dates-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 1rem; }
-.date-card { background: var(--black); padding: 2rem; transition: background .2s; }
-.date-card:hover { background: var(--card-bg); }
-.date-day { font-size: 3rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1; color: var(--teal); font-family: 'Space Mono', monospace; }
-.date-month { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
-.date-event { font-size: 14px; font-weight: 600; margin-top: 1rem; }
-.date-venue { font-size: 12px; color: var(--muted); margin-top: 4px; }
-.date-city { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-top: 8px; }
-.date-tba { display: flex; flex-direction: column; justify-content: center; height: 100%; min-height: 160px; }
-.date-tba-label { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
-.date-tba-text { font-size: 20px; font-weight: 700; color: rgba(240,238,234,0.2); margin-top: 0.5rem; }
+/* UPCOMING DATES */
+
+.events-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:1px;
+    background:var(--border);
+    border:1px solid var(--border);
+    margin-top:1rem;
+}
+
+.event-card{
+    background:var(--black);
+    padding:2rem;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    transition:background .25s;
+}
+
+.event-card:hover{
+    background:var(--card-bg);
+}
+
+.event-card h3{
+    font-size:1.5rem;
+    font-weight:700;
+    color:var(--teal);
+    margin-bottom:.75rem;
+}
+
+.event-card p{
+    font-size:13px;
+    color:var(--muted);
+    margin:4px 0;
+}
+
+.event-card span{
+    display:block;
+    margin:1rem 0 1.5rem;
+    font-size:18px;
+    font-weight:700;
+    color:var(--white);
+}
+
+.event-btn{
+    display:inline-block;
+    align-self:flex-start;
+    padding:10px 22px;
+    border:1px solid var(--teal-border);
+    color:var(--teal);
+    text-transform:uppercase;
+    font-size:11px;
+    letter-spacing:.15em;
+    transition:.25s;
+}
+
+.event-btn:hover{
+    background:var(--teal);
+    color:var(--black);
+}
 .dates-contact { margin-top: 1.5rem; font-size: 12px; color: var(--muted); }
 .dates-contact a { color: var(--teal); border-bottom: 1px solid var(--teal-border); padding-bottom: 1px; }
 
