@@ -124,9 +124,9 @@ section:nth-child(even) { background: var(--smoke-2); }
 
 /* WARMUP */
 .warmup-box { background: var(--smoke-4); border: 1px solid var(--border); padding: 2.5rem; margin-top: 2rem; }
-.warmup-intro { font-size: 15px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.7; }
+.warmup-intro { font-size: 16px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.7; }
 .dj-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-.dj-tag { font-size: 12px; padding: 5px 12px; border: 1px solid var(--border); color: rgba(240,238,234,0.45); transition: all .2s; cursor: default; letter-spacing: 0.04em; }
+.dj-tag { font-size: 14px; padding: 5px 12px; border: 1px solid var(--border); color: rgba(240,238,234,0.45); transition: all .2s; cursor: default; letter-spacing: 0.04em; }
 .dj-tag:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
 .dj-tag.ft { border-color: rgba(240,238,234,0.15); color: rgba(240,238,234,0.75); font-weight: 500; }
 
