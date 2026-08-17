@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviation Group — Cuadro de horarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* page shell: dark */
+    --bg-void:#0c1116;
+    --bg-page-panel:#141b22;
+    --page-line:#2a3642;
+    --page-text-primary:#eaf1f7;
+    --page-text-secondary:#93a4b3;
+    --page-text-dim:#5a6a78;
+
+    /* calendar: light */
+    --bg-panel:#ffffff;
+    --bg-panel-2:#f1f3f6;
+    --line:#e2e6eb;
+    --line-soft:#edf0f3;
+    --text-primary:#1b2530;
+    --text-secondary:#5c6b78;
+    --text-dim:#9aa6b1;
+
+    --amber:#b06a12;      --amber-tint:#fdf1de;   --amber-solid:#e8a23d;  --amber-dim:#4a3a20;
+    --blue:#1f6fa8;       --blue-tint:#e8f3fb;    --blue-solid:#4fa8d8;   --blue-dim:#1e3243;
+    --teal:#1a8f6b;       --teal-tint:#e4f7f0;    --teal-solid:#3fc99b;   --teal-dim:#173c30;
+    --ocre:#a06422;       --ocre-tint:#fbf0e1;    --ocre-solid:#d99a55;  --ocre-dim:#3a2818;
+    --violet:#6a52c9;     --violet-tint:#efecfb;  --violet-solid:#9b8cf2; --violet-dim:#2a2450;
+    --magenta:#9c48ba;    --magenta-tint:#f8ecfa; --magenta-solid:#c98cf2; --magenta-dim:#3a2145;
+
+    --now-green:#1a8f6b;  --now-tint:#e4f7f0;      --now-dim:#173c30;
+
+    --radius:10px;
+    font-family:'IBM Plex Sans',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    background:var(--bg-void);
+    color:var(--page-text-primary);
+    -webkit-font-smoothing:antialiased;
+  }
+  body{ padding:28px 20px 60px; }
+  .wrap{ max-width:1180px; margin:0 auto; }
+
+  /* ---------- HEADER ---------- */
+  .masthead{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:22px;
+    padding-bottom:18px;
+    border-bottom:1px solid var(--page-line);
+  }
+  .masthead-left .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--amber-solid);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  .masthead-left h1{
+    margin:0;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:26px;
+    letter-spacing:.01em;
+    color:var(--page-text-primary);
+  }
+  .masthead-left .sub{
+    margin:6px 0 0;
+    color:var(--page-text-secondary);
+    font-size:13.5px;
+  }
+  .clock{ font-family:'IBM Plex Mono',monospace; text-align:right; }
+  .clock .day{
+    font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--page-text-secondary);
+  }
+  .clock .time{
+    font-size:28px; font-weight:600; color:var(--page-text-primary); letter-spacing:.03em;
+  }
+
+  /* ---------- HERO / FIDS BOARD ---------- */
+  .board{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:28px;
+  }
+  @media(max-width:640px){ .board{grid-template-columns:1fr;} }
+
+  .flap-card{
+    background:var(--bg-page-panel);
+    border:1px solid var(--page-line);
+    border-radius:var(--radius);
+    padding:18px 20px 20px;
+    position:relative;
+    overflow:hidden;
+    animation:flapIn .5s cubic-bezier(.2,.9,.25,1) both;
+  }
+  .flap-card.next{ animation-delay:.08s; }
+  @keyframes flapIn{
+    0%{ opacity:0; transform:perspective(600px) rotateX(-14deg) translateY(-6px); }
+    100%{ opacity:1; transform:perspective(600px) rotateX(0deg) translateY(0); }
+  }
+  .flap-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--page-text-dim);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--page-text-dim);
+    flex:none;
+  }
+  .flap-card.active .dot{
+    background:var(--now-green);
+    box-shadow:0 0 0 4px var(--now-dim);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ box-shadow:0 0 0 3px var(--now-dim); }
+    50%{ box-shadow:0 0 0 6px var(--now-dim); }
+  }
+  .flap-card.active{ border-color:var(--now-green); }
+  .flap-card.active .flap-label{ color:var(--now-green); }
+
+  .flap-code{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:.01em;
+    margin-bottom:4px;
+    color:var(--page-text-primary);
+  }
+  .flap-name{
+    font-size:14.5px;
+    color:var(--page-text-secondary);
+    margin-bottom:14px;
+    min-height:20px;
+    line-height:1.4;
+  }
+  .flap-meta{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    padding:4px 9px;
+    border-radius:100px;
+    border:1px solid var(--page-line);
+    color:var(--page-text-secondary);
+    letter-spacing:.03em;
+    background:transparent;
+  }
+  .chip.time{ color:var(--page-text-primary); border-color:var(--page-line); }
+  .empty-state{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13.5px;
+    color:var(--page-text-dim);
+    padding:6px 0 2px;
+  }
+
+  /* campus badge colors — light variant (used inside the white calendar) */
+  .campus-OM{ background:var(--blue-tint); color:var(--blue); border-color:transparent; }
+  .campus-OT{ background:var(--amber-tint); color:var(--amber); border-color:transparent; }
+  .campus-BM{ background:var(--teal-tint); color:var(--teal); border-color:transparent; }
+  .campus-BT{ background:var(--ocre-tint); color:var(--ocre); border-color:transparent; }
+  .campus-FM{ background:var(--violet-tint); color:var(--violet); border-color:transparent; }
+  .campus-FT{ background:var(--magenta-tint); color:var(--magenta); border-color:transparent; }
+
+  /* campus badge colors — dark variant (used on the dark page: hero cards, legend) */
+  .campus-OM.dark{ background:var(--blue-dim); color:var(--blue-solid); }
+  .campus-OT.dark{ background:var(--amber-dim); color:var(--amber-solid); }
+  .campus-BM.dark{ background:var(--teal-dim); color:var(--teal-solid); }
+  .campus-BT.dark{ background:var(--ocre-dim); color:var(--ocre-solid); }
+  .campus-FM.dark{ background:var(--violet-dim); color:var(--violet-solid); }
+  .campus-FT.dark{ background:var(--magenta-dim); color:var(--magenta-solid); }
+
+  /* subtle full-cell tint by campus/turno, for at-a-glance reading */
+  td.cell-OM{ background:var(--blue-tint); box-shadow:inset 3px 0 0 var(--blue-solid); }
+  td.cell-OT{ background:var(--amber-tint); box-shadow:inset 3px 0 0 var(--amber-solid); }
+  td.cell-BM{ background:var(--teal-tint); box-shadow:inset 3px 0 0 var(--teal-solid); }
+  td.cell-BT{ background:var(--ocre-tint); box-shadow:inset 3px 0 0 var(--ocre-solid); }
+  td.cell-FM{ background:var(--violet-tint); box-shadow:inset 3px 0 0 var(--violet-solid); }
+  td.cell-FT{ background:var(--magenta-tint); box-shadow:inset 3px 0 0 var(--magenta-solid); }
+
+  /* keep "now" indicator readable on top of a campus tint */
+  td.is-now{ box-shadow:inset 3px 0 0 var(--now-green); outline:1.5px solid var(--now-green); outline-offset:-1.5px; }
+
+  tr.is-today-row td{ background:rgba(63,201,155,.06); }
+  tr.is-now-row td{ background:rgba(63,201,155,.14); box-shadow:inset 3px 0 0 var(--now-green); }
+  tr.is-past-row{ opacity:.4; }
+  tr.is-past-row td{ background:transparent !important; box-shadow:none !important; }
+  .status-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.05em;
+    padding:2px 8px;
+    border-radius:100px;
+  }
+  .status-tag.done{ background:var(--bg-panel-2); color:var(--text-dim); }
+  .status-tag.today{ background:var(--now-tint); color:var(--now-green); }
+  .status-tag.upcoming{ background:var(--bg-panel-2); color:var(--text-secondary); }
+
+  /* ---------- GRID SECTION ---------- */
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--page-text-dim);
+    margin:0 0 12px;
+  }
+  .grid-scroll{
+    overflow-x:auto;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--bg-panel);
+    box-shadow:0 4px 18px rgba(0,0,0,.35);
+  }
+  table{ border-collapse:collapse; width:100%; min-width:760px; }
+  thead th{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-secondary);
+    text-align:left;
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg-panel-2);
+    white-space:nowrap;
+  }
+  thead th.today{ color:var(--amber); font-weight:700; }
+  th.hour-col, td.hour-col{
+    position:sticky;
+    left:0;
+    z-index:2;
+    background:var(--bg-panel-2);
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:13px;
+    color:var(--text-secondary);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:10px 14px;
+    border-bottom:1px solid var(--line-soft);
+    border-right:1px solid var(--line-soft);
+    vertical-align:top;
+    font-size:12.5px;
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  td.cell-empty{ color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:12px; }
+  .cell-code{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:12.5px;
+    margin-bottom:2px;
+    color:var(--text-primary);
+  }
+  .cell-name{
+    color:var(--text-secondary);
+    line-height:1.35;
+    margin-bottom:6px;
+  }
+  .cell-badge{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    padding:2px 7px;
+    border-radius:100px;
+  }
+
+  /* ---------- LEGEND ---------- */
+  .legend{
+    margin-top:26px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:16px;
+  }
+  .legend-card{
+    background:var(--bg-page-panel);
+    border:1px solid var(--page-line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .legend-card h3{
+    margin:0 0 10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--page-text-dim);
+  }
+  .legend-row{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:12.5px;
+    padding:5px 0;
+    border-bottom:1px solid var(--page-line);
+    color:var(--page-text-secondary);
+  }
+  .legend-row:last-child{ border-bottom:none; }
+  .legend-row b{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--page-text-primary);
+    font-weight:600;
+    flex:none;
+  }
+  .swatch{
+    display:inline-block;
+    width:10px;height:10px;
+    border-radius:3px;
+    margin-right:8px;
+    flex:none;
+  }
+  .swatch-OM{ background:var(--blue-solid); }
+  .swatch-OT{ background:var(--amber-solid); }
+  .swatch-BM{ background:var(--teal-solid); }
+  .swatch-BT{ background:var(--ocre-solid); }
+  .swatch-FM{ background:var(--violet-solid); }
+  .swatch-FT{ background:var(--magenta-solid); }
+  .module-divider{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin:48px 0 24px;
+    color:var(--page-text-dim);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+  }
+  .module-divider::before, .module-divider::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--page-line);
+  }
+  .module-masthead{ border-bottom:1px solid var(--page-line); padding-bottom:18px; }
+  .info-strip{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:20px;
+  }
+
+  footer{
+    text-align:center;
+    margin-top:34px;
+    color:var(--page-text-dim);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.05em;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="masthead-left">
+      <p class="eyebrow">Aula P607 · Aviation Group</p>
+      <h1>Cuadro de horarios</h1>
+      <p class="sub">Grupos, asignaturas y campus asignados a la semana en curso.</p>
+    </div>
+    <div class="clock">
+      <div class="day" id="clockDay">—</div>
+      <div class="time" id="clockTime">--:--</div>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="flap-card" id="cardNow">
+      <div class="flap-label"><span class="dot"></span><span id="nowLabel">Ahora</span></div>
+      <div id="nowContent"><div class="empty-state">Cargando…</div></div>
+    </div>
+    <div class="flap-card next" id="cardNext">
+      <div class="flap-label"><span class="dot"></span><span>Siguiente clase</span></div>
+      <div id="nextContent"><div class="empty-state">Cargando…</div></div>
+    </div>
+  </div>
+
+  <p class="section-label">Semana completa</p>
+  <div class="grid-scroll">
+    <table id="scheduleTable">
+      <thead>
+        <tr>
+          <th class="hour-col">Hora</th>
+          <th data-day="Lunes">Lunes</th>
+          <th data-day="Martes">Martes</th>
+          <th data-day="Miércoles">Miércoles</th>
+          <th data-day="Jueves">Jueves</th>
+          <th data-day="Viernes">Viernes</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="legend">
+    <div class="legend-card">
+      <h3>Formación</h3>
+      <div class="legend-row"><b>GMM</b><span>Grado Medio de Montaje</span></div>
+      <div class="legend-row"><b>GSAMT</b><span>Grado Superior de Turbina</span></div>
+      <div class="legend-row"><b>GSAV</b><span>Grado Superior de Aviónica</span></div>
+    </div>
+    <div class="legend-card">
+      <h3>Campus / turno</h3>
+      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-OM"></span><b>OM</b></span><span>Orovilla, mañana</span></div>
+      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-OT"></span><b>OT</b></span><span>Orovilla, tarde</span></div>
+      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-BM"></span><b>BM</b></span><span>Barajas, mañana</span></div>
+      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-BT"></span><b>BT</b></span><span>Barajas, tarde</span></div>
+      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-FM"></span><b>FM</b></span><span>Fuenlabrada, mañana</span></div>
+      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-FT"></span><b>FT</b></span><span>Fuenlabrada, tarde</span></div>
+    </div>
+    <div class="legend-card">
+      <h3>Asignaturas</h3>
+      <div class="legend-row"><b>1444</b><span>Instalaciones eléctricas y electrónicas</span></div>
+      <div class="legend-row"><b>1426</b><span>Fundamentos de electrónica</span></div>
+      <div class="legend-row"><b>1428</b><span>Técnicas digitales y sist. de instrumentos electrónicos</span></div>
+      <div class="legend-row"><b>1427</b><span>Fundamentos de electrónica en aviónica</span></div>
+      <div class="legend-row"><b>1665</b><span>Digitalización aplicada al sistema productivo (GS)</span></div>
+      <div class="legend-row"><b>1664</b><span>Digitalización aplicada a los sectores productivos (GM)</span></div>
+    </div>
+  </div>
+
+  <footer>ACTUALIZADO MANUALMENTE · AULA BASE P607</footer>
+
+  <!-- ============ MÓDULO APARTE: CURSO CERO DE MATEMÁTICAS ============ -->
+  <div class="module-divider">
+    <span>Módulo aparte</span>
+  </div>
+
+  <div class="masthead module-masthead">
+    <div class="masthead-left">
+      <p class="eyebrow">Grupo GSAMTMA</p>
+      <h1>Curso Cero de Matemáticas</h1>
+      <p class="sub">Del 7 al 18 de septiembre, de lunes a viernes · Campus Barajas, turno mañana.</p>
+    </div>
+  </div>
+
+  <div class="info-strip">
+    <span class="chip time">Campus: Barajas</span>
+    <span class="chip time">Grupo: GSAMTMA</span>
+    <span class="chip time">Turno: mañana</span>
+    <span class="chip time">09:00–13:00 (08:00–13:00 los días 17 y 18)</span>
+  </div>
+
+  <p class="section-label">Calendario de sesiones</p>
+  <div class="grid-scroll">
+    <table id="cursoCeroTable">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Día</th>
+          <th>Horario</th>
+          <th>Campus / turno</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="cursoCeroBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+/* ---------------- CURSO CERO DE MATEMÁTICAS ---------------- */
+const CURSO_CERO = [
+  {date:'2026-09-07', day:'Lunes',     start:'09:00', end:'13:00'},
+  {date:'2026-09-08', day:'Martes',    start:'09:00', end:'13:00'},
+  {date:'2026-09-09', day:'Miércoles', start:'09:00', end:'13:00'},
+  {date:'2026-09-10', day:'Jueves',    start:'09:00', end:'13:00'},
+  {date:'2026-09-11', day:'Viernes',   start:'09:00', end:'13:00'},
+  {date:'2026-09-14', day:'Lunes',     start:'09:00', end:'13:00'},
+  {date:'2026-09-15', day:'Martes',    start:'09:00', end:'13:00'},
+  {date:'2026-09-16', day:'Miércoles', start:'09:00', end:'13:00'},
+  {date:'2026-09-17', day:'Jueves',    start:'08:00', end:'13:00'},
+  {date:'2026-09-18', day:'Viernes',   start:'08:00', end:'13:00'}
+];
+
+function formatFecha(iso){
+  const [y,m,d] = iso.split('-').map(Number);
+  return `${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;
+}
+
+const cursoCeroBody = document.getElementById('cursoCeroBody');
+CURSO_CERO.forEach(session=>{
+  const tr = document.createElement('tr');
+  tr.dataset.date = session.date;
+  tr.innerHTML = `
+    <td class="cell-code">${formatFecha(session.date)}</td>
+    <td>${session.day}</td>
+    <td class="cell-code">${session.start} – ${session.end}</td>
+    <td class="cell-BM"><span class="cell-badge campus-BM">Barajas · mañana</span></td>
+    <td class="status-cell"></td>
+  `;
+  cursoCeroBody.appendChild(tr);
+});
+
+function highlightCursoCeroToday(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const todayISO = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+  const nowMinutes = now.getHours()*60 + now.getMinutes();
+
+  document.querySelectorAll('#cursoCeroBody tr').forEach(tr=>{
+    const sessionDate = tr.dataset.date;
+    const session = CURSO_CERO.find(s=>s.date===sessionDate);
+    const statusCell = tr.querySelector('.status-cell');
+    tr.classList.remove('is-today-row','is-now-row','is-past-row');
+
+    if(sessionDate < todayISO){
+      // ya pasó esta fecha: se apaga automáticamente
+      tr.classList.add('is-past-row');
+      statusCell.innerHTML = `<span class="status-tag done">Finalizada</span>`;
+    } else if(sessionDate === todayISO){
+      tr.classList.add('is-today-row');
+      const toMin = hhmm=>{ const [h,m]=hhmm.split(':').map(Number); return h*60+m; };
+      if(nowMinutes >= toMin(session.start) && nowMinutes < toMin(session.end)){
+        tr.classList.add('is-now-row');
+        statusCell.innerHTML = `<span class="status-tag today">● En curso ahora</span>`;
+      } else {
+        statusCell.innerHTML = `<span class="status-tag today">Hoy</span>`;
+      }
+    } else {
+      statusCell.innerHTML = `<span class="status-tag upcoming">Próxima</span>`;
+    }
+  });
+}
+highlightCursoCeroToday();
+setInterval(highlightCursoCeroToday, 60000);
+
+/* ---------------- DATA ---------------- */
+const SUBJECTS = {
+  '1444':'Instalaciones eléctricas y electrónicas',
+  '1426':'Fundamentos de electrónica',
+  '1428':'Técnicas digitales y sistemas de instrumentos electrónicos en aeromecánica',
+  '1427':'Fundamentos de electrónica en aviónica',
+  '1665':'Digitalización aplicada al sistema productivo (GS)',
+  '1664':'Digitalización aplicada a los sectores productivos (GM)'
+};
+const FORMACION = { GMM:'Grado Medio de Montaje', GSAMT:'Grado Superior de Turbina', GSAV:'Grado Superior de Aviónica' };
+const CAMPUS = {
+  OM:'Orovilla · mañana', OT:'Orovilla · tarde',
+  BM:'Barajas · mañana', BT:'Barajas · tarde',
+  FM:'Fuenlabrada · mañana', FT:'Fuenlabrada · tarde'
+};
+
+// hour -> end time used to compute "is this class happening right now"
+const HOUR_ENDS = { '08:00':'09:00','09:00':'10:00','10:00':'11:00','11:00':'12:00','12:00':'13:00','13:00':'14:00','17:00':'18:00','18:00':'19:00' };
+const HOURS = ['08:00','09:00','10:00','11:00','12:00','13:00','17:00','18:00'];
+const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+
+function slot(code, subj){ return code ? {code, subj} : null; }
+
+const SCHEDULE = {
+  'Lunes': {
+    '08:00': slot('1A-GMM-OM','1444'), '09:00': slot('1A-GMM-OM','1444'),
+    '10:00': slot('1A-GSAMT-OM','1426'), '11:00': slot('1A-GSAMT-OM','1426'),
+    '12:00': slot('2A-GSAMT-OM','1428'), '13:00': slot('2A-GSAMT-OM','1428'),
+    '17:00': slot('2B-GSAMT-OT','1428'), '18:00': slot('2B-GSAMT-OT','1428')
+  },
+  'Martes': {
+    '08:00': slot('2B-GSAMT-OM','1428'), '09:00': slot('2B-GSAMT-OM','1428'),
+    '10:00': null, '11:00': null,
+    '12:00': slot('1A-GMM-OM','1444'), '13:00': slot('1A-GMM-OM','1444'),
+    '17:00': null, '18:00': null
+  },
+  'Miércoles': {
+    '08:00': slot('1A-GSAV-BM','1427'), '09:00': slot('1A-GSAV-BM','1427'),
+    '10:00': null, '11:00': slot('1B-GSAMT-BM','1426'),
+    '12:00': null, '13:00': slot('2A-GSAMT-OM','1665'),
+    '17:00': slot('2B-GSAMT-OT','1428'), '18:00': slot('2B-GSAMT-OT','1428')
+  },
+  'Jueves': {
+    '08:00': slot('1A-GSAMT-OM','1426'), '09:00': slot('2B-GSAMT-OM','1428'),
+    '10:00': slot('2B-GSAMT-OM','1428'), '11:00': slot('2A-GSAMT-OM','1428'),
+    '12:00': slot('2A-GSAMT-OM','1428'), '13:00': slot('2A-GMM-OM','1664'),
+    '17:00': null, '18:00': null
+  },
+  'Viernes': {
+    '08:00': slot('1B-GSAMT-BM','1426'), '09:00': slot('1B-GSAMT-BM','1426'),
+    '10:00': slot('1A-GSAV-BM','1427'), '11:00': slot('1A-GSAV-BM','1427'),
+    '12:00': null, '13:00': slot('1A-GMM-OM','1444'),
+    '17:00': null, '18:00': slot('2A-GSAMT-OT','1665')
+  }
+};
+
+/* ---------------- HELPERS ---------------- */
+function parseCode(code){
+  const [grupo, formacion, campus] = code.split('-');
+  return { grupo, formacion, campus };
+}
+function grupoLabel(g){
+  return (g[0] + 'º ' + g[1]); // "1A" -> "1º A"
+}
+function badgeHTML(campus, dark){
+  return `<span class="cell-badge campus-${campus}${dark ? ' dark' : ''}">${CAMPUS[campus] || campus}</span>`;
+}
+
+/* ---------------- RENDER TABLE ---------------- */
+const tbody = document.getElementById('tableBody');
+HOURS.forEach(hour=>{
+  const tr = document.createElement('tr');
+  const th = document.createElement('td');
+  th.className = 'hour-col';
+  th.textContent = hour;
+  tr.appendChild(th);
+  DAYS.forEach(day=>{
+    const td = document.createElement('td');
+    td.dataset.day = day;
+    td.dataset.hour = hour;
+    const entry = SCHEDULE[day][hour];
+    if(entry){
+      const {grupo, formacion, campus} = parseCode(entry.code);
+      td.classList.add('cell-' + campus);
+      td.innerHTML = `
+        <div class="cell-code">${grupoLabel(grupo)} · ${formacion}</div>
+        <div class="cell-name">${SUBJECTS[entry.subj]} <span style="color:var(--text-dim)">(${entry.subj})</span></div>
+        ${badgeHTML(campus)}
+      `;
+    } else {
+      td.innerHTML = `<span class="cell-empty">—</span>`;
+    }
+    tr.appendChild(td);
+  });
+  tbody.appendChild(tr);
+});
+
+/* ---------------- LIVE CLOCK + NOW/NEXT ---------------- */
+const DAY_NAMES = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+function toMinutes(hhmm){
+  const [h,m] = hhmm.split(':').map(Number);
+  return h*60+m;
+}
+
+function renderNowNext(){
+  const now = new Date();
+  const dayName = DAY_NAMES[now.getDay()];
+  const nowMinutes = now.getHours()*60 + now.getMinutes();
+
+  document.getElementById('clockDay').textContent = dayName + ' · ' + now.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('clockTime').textContent = now.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+
+  // clear previous today/now highlighting
+  document.querySelectorAll('th[data-day]').forEach(th=>th.classList.remove('today'));
+  document.querySelectorAll('td[data-day]').forEach(td=>{ td.classList.remove('is-today'); td.classList.remove('is-now'); });
+
+  const cardNow = document.getElementById('cardNow');
+  const nowContent = document.getElementById('nowContent');
+  const nextContent = document.getElementById('nextContent');
+  const nowLabel = document.getElementById('nowLabel');
+
+  const isSchoolDay = DAYS.includes(dayName);
+
+  if(isSchoolDay){
+    const th = document.querySelector(`th[data-day="${dayName}"]`);
+    if(th) th.classList.add('today');
+    document.querySelectorAll(`td[data-day="${dayName}"]`).forEach(td=>td.classList.add('is-today'));
+  }
+
+  function buildFlapContent(entry, hour, endHour){
+    const {grupo, formacion, campus} = parseCode(entry.code);
+    return `
+      <div class="flap-code">${grupoLabel(grupo)} · ${formacion}</div>
+      <div class="flap-name">${SUBJECTS[entry.subj]}</div>
+      <div class="flap-meta">
+        <span class="chip time">${hour} – ${endHour}</span>
+        ${badgeHTML(campus, true)}
+      </div>
+    `;
+  }
+
+  // ---- AHORA ----
+  let activeEntry = null, activeHour = null;
+  if(isSchoolDay){
+    for(const hour of HOURS){
+      const entry = SCHEDULE[dayName][hour];
+      if(!entry) continue;
+      const start = toMinutes(hour), end = toMinutes(HOUR_ENDS[hour]);
+      if(nowMinutes >= start && nowMinutes < end){ activeEntry = entry; activeHour = hour; break; }
+    }
+  }
+
+  if(activeEntry){
+    cardNow.classList.add('active');
+    nowLabel.textContent = 'Ahora en clase';
+    nowContent.innerHTML = buildFlapContent(activeEntry, activeHour, HOUR_ENDS[activeHour]);
+    const td = document.querySelector(`td[data-day="${dayName}"][data-hour="${activeHour}"]`);
+    if(td) td.classList.add('is-now');
+  } else {
+    cardNow.classList.remove('active');
+    nowLabel.textContent = 'Ahora';
+    nowContent.innerHTML = `<div class="empty-state">Sin clase en este momento</div>`;
+  }
+
+  // ---- SIGUIENTE ----
+  let nextEntry = null, nextHour = null, nextDay = null;
+  if(isSchoolDay){
+    for(const hour of HOURS){
+      const entry = SCHEDULE[dayName][hour];
+      if(!entry) continue;
+      const start = toMinutes(hour);
+      if(start > nowMinutes){ nextEntry = entry; nextHour = hour; nextDay = dayName; break; }
+    }
+  }
+  if(!nextEntry){
+    // search following days (wrap week)
+    const startIdx = DAYS.indexOf(dayName); // -1 if weekend
+    for(let i=1;i<=7;i++){
+      const idx = (startIdx===-1 ? 0 : startIdx+i) % DAYS.length;
+      const candidateDay = DAYS[idx];
+      const hourFound = HOURS.find(h=>SCHEDULE[candidateDay][h]);
+      if(hourFound){ nextEntry = SCHEDULE[candidateDay][hourFound]; nextHour = hourFound; nextDay = candidateDay; break; }
+    }
+  }
+
+  if(nextEntry){
+    const prefix = (nextDay === dayName) ? '' : `<span class="chip">${nextDay}</span> `;
+    nextContent.innerHTML = prefix + buildFlapContent(nextEntry, nextHour, HOUR_ENDS[nextHour]);
+  } else {
+    nextContent.innerHTML = `<div class="empty-state">No hay más clases programadas</div>`;
+  }
+}
+
+renderNowNext();
+setInterval(renderNowNext, 60000);
+</script>
+</body>
+</html>
