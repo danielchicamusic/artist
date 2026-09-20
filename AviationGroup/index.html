@@ -320,6 +320,18 @@
     padding:2px 7px;
     border-radius:100px;
   }
+  .cell-range{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:11px;
+    padding:3px 9px;
+    border-radius:100px;
+    background:var(--bg-panel-2);
+    border:1px solid var(--line);
+    color:var(--text-primary);
+    margin-bottom:8px;
+  }
 
   /* ---------- LEGEND ---------- */
   .legend{
@@ -713,24 +725,66 @@ function grupoTagHTML(g){
 function badgeHTML(campus, dark){
   return `<span class="cell-badge campus-${campus}${dark ? ' dark' : ''}">${CAMPUS[campus] || campus}</span>`;
 }
+function sameEntry(a, b){
+  return !!a && !!b && a.code === b.code && a.subj === b.subj;
+}
+// Dado un día y una hora dentro de un bloque, devuelve el rango horario real
+// fusionando las horas consecutivas que son la misma clase (mismo grupo/formación/asignatura)
+function computeBlockRange(day, hour){
+  const entry = SCHEDULE[day][hour];
+  let idx = HOURS.indexOf(hour);
+  let startIdx = idx, endIdx = idx;
+  while(startIdx > 0 && HOUR_ENDS[HOURS[startIdx-1]] === HOURS[startIdx] && sameEntry(SCHEDULE[day][HOURS[startIdx-1]], entry)){
+    startIdx--;
+  }
+  while(endIdx < HOURS.length-1 && HOUR_ENDS[HOURS[endIdx]] === HOURS[endIdx+1] && sameEntry(SCHEDULE[day][HOURS[endIdx+1]], entry)){
+    endIdx++;
+  }
+  return { startHour: HOURS[startIdx], endHour: HOUR_ENDS[HOURS[endIdx]], span: endIdx - startIdx + 1 };
+}
 
-/* ---------------- RENDER TABLE ---------------- */
+/* ---------------- RENDER TABLE (con bloques fusionados) ---------------- */
 const tbody = document.getElementById('tableBody');
-HOURS.forEach(hour=>{
+
+// Para cada día, calculamos qué celdas se fusionan (rowspan) y cuáles se omiten
+// por estar cubiertas por el rowspan de la fila anterior.
+const daySegments = {};
+DAYS.forEach(day=>{
+  daySegments[day] = new Array(HOURS.length).fill(null);
+  let i = 0;
+  while(i < HOURS.length){
+    const hour = HOURS[i];
+    const entry = SCHEDULE[day][hour];
+    if(!entry){ daySegments[day][i] = { covered:false, span:1, entry:null }; i++; continue; }
+    const range = computeBlockRange(day, hour);
+    daySegments[day][i] = { covered:false, span:range.span, entry, startHour:range.startHour, endHour:range.endHour };
+    for(let k=1; k<range.span; k++){ daySegments[day][i+k] = { covered:true }; }
+    i += range.span;
+  }
+});
+
+HOURS.forEach((hour, hourIdx)=>{
   const tr = document.createElement('tr');
   const th = document.createElement('td');
   th.className = 'hour-col';
   th.textContent = hour;
   tr.appendChild(th);
   DAYS.forEach(day=>{
+    const seg = daySegments[day][hourIdx];
+    if(seg.covered) return; // esta celda queda cubierta por el rowspan de la fila anterior
     const td = document.createElement('td');
     td.dataset.day = day;
-    td.dataset.hour = hour;
-    const entry = SCHEDULE[day][hour];
+    td.dataset.hour = seg.startHour || hour;
+    if(seg.span > 1) td.rowSpan = seg.span;
+    const entry = seg.entry;
     if(entry){
       const {grupo, formacion, campus} = parseCode(entry.code);
       td.classList.add('cell-' + campus);
+      const rangeChip = seg.span > 1
+        ? `<div class="cell-range">${seg.startHour} – ${seg.endHour}</div>`
+        : '';
       td.innerHTML = `
+        ${rangeChip}
         <div class="cell-code">${grupoTagHTML(grupo)}<span>· ${formacion}</span></div>
         <div class="cell-name">${SUBJECTS[entry.subj]} <span style="color:var(--text-dim)">(${entry.subj})</span></div>
         ${badgeHTML(campus)}
@@ -779,20 +833,20 @@ function renderNowNext(){
     document.querySelectorAll(`td[data-day="${dayName}"]`).forEach(td=>td.classList.add('is-today'));
   }
 
-  function buildFlapContent(entry, hour, endHour){
+  function buildFlapContent(entry, startHour, endHour){
     const {grupo, formacion, campus} = parseCode(entry.code);
     return `
       <div class="flap-code">${grupoTagHTML(grupo)}<span>· ${formacion}</span></div>
       <div class="flap-name">${SUBJECTS[entry.subj]}</div>
       <div class="flap-meta">
-        <span class="chip time">${hour} – ${endHour}</span>
+        <span class="chip time">${startHour} – ${endHour}</span>
         ${badgeHTML(campus, true)}
       </div>
     `;
   }
 
   // ---- AHORA ----
-  let activeEntry = null, activeHour = null;
+  let activeEntry = null, activeHour = null, activeRange = null;
   if(isSchoolDay){
     for(const hour of HOURS){
       const entry = SCHEDULE[dayName][hour];
@@ -801,12 +855,13 @@ function renderNowNext(){
       if(nowMinutes >= start && nowMinutes < end){ activeEntry = entry; activeHour = hour; break; }
     }
   }
+  if(activeEntry) activeRange = computeBlockRange(dayName, activeHour);
 
   if(activeEntry){
     cardNow.classList.add('active');
     nowLabel.textContent = 'Ahora en clase';
-    nowContent.innerHTML = buildFlapContent(activeEntry, activeHour, HOUR_ENDS[activeHour]);
-    const td = document.querySelector(`td[data-day="${dayName}"][data-hour="${activeHour}"]`);
+    nowContent.innerHTML = buildFlapContent(activeEntry, activeRange.startHour, activeRange.endHour);
+    const td = document.querySelector(`td[data-day="${dayName}"][data-hour="${activeRange.startHour}"]`);
     if(td) td.classList.add('is-now');
   } else {
     cardNow.classList.remove('active');
@@ -823,7 +878,9 @@ function renderNowNext(){
       const entry = SCHEDULE[dayName][hour];
       if(!entry) continue;
       const start = toMinutes(hour);
-      if(start > nowMinutes){ nextEntry = entry; nextHour = hour; nextDay = dayName; break; }
+      if(start <= nowMinutes) continue;
+      if(activeEntry && sameEntry(entry, activeEntry)) continue; // sigue siendo el mismo bloque en curso
+      nextEntry = entry; nextHour = hour; nextDay = dayName; break;
     }
   }
   if(!nextEntry){
@@ -838,8 +895,9 @@ function renderNowNext(){
   }
 
   if(nextEntry){
+    const nextRange = computeBlockRange(nextDay, nextHour);
     const prefix = (nextDay === dayName) ? '' : `<span class="chip">${nextDay}</span> `;
-    nextContent.innerHTML = prefix + buildFlapContent(nextEntry, nextHour, HOUR_ENDS[nextHour]);
+    nextContent.innerHTML = prefix + buildFlapContent(nextEntry, nextRange.startHour, nextRange.endHour);
   } else {
     nextContent.innerHTML = `<div class="empty-state">No hay más clases programadas</div>`;
   }
