@@ -333,6 +333,60 @@
     margin-bottom:8px;
   }
 
+  /* ---------- RESUMEN POR GRUPO ---------- */
+  .summary-session{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    padding:3px 0;
+  }
+  .summary-session:not(:last-child){ border-bottom:1px solid var(--line-soft); }
+  .summary-day{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:12px;
+    color:var(--text-primary);
+    min-width:70px;
+  }
+  .summary-hour{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--text-secondary);
+  }
+  .summary-codes{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .summary-code-chip{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:11.5px;
+    padding:3px 9px;
+    border-radius:100px;
+    background:var(--bg-panel-2);
+    border:1px solid var(--line);
+    color:var(--text-primary);
+  }
+  .summary-code-inline{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    color:var(--text-dim);
+    margin-left:2px;
+  }
+  .summary-code-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:4px 0;
+  }
+  .summary-code-row:not(:last-child){ border-bottom:1px solid var(--line-soft); }
+  .summary-code-name{
+    color:var(--text-secondary);
+    font-size:12.5px;
+    line-height:1.3;
+  }
+
   /* ---------- LEGEND ---------- */
   .legend{
     margin-top:26px;
@@ -562,8 +616,6 @@
       <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-OT"></span><b>OT</b></span><span>Orovilla, tarde</span></div>
       <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-BM"></span><b>BM</b></span><span>Barajas, mañana</span></div>
       <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-BT"></span><b>BT</b></span><span>Barajas, tarde</span></div>
-      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-FM"></span><b>FM</b></span><span>Fuenlabrada, mañana</span></div>
-      <div class="legend-row"><span style="display:flex;align-items:center;"><span class="swatch swatch-FT"></span><b>FT</b></span><span>Fuenlabrada, tarde</span></div>
     </div>
     <div class="legend-card">
       <h3>Asignaturas</h3>
@@ -574,6 +626,20 @@
       <div class="legend-row"><b>1665</b><span>Digitalización aplicada al sistema productivo (GS)</span></div>
       <div class="legend-row"><b>1664</b><span>Digitalización aplicada a los sectores productivos (GM)</span></div>
     </div>
+  </div>
+
+  <p class="section-label">Resumen por grupo</p>
+  <div class="grid-scroll">
+    <table id="groupSummaryTable">
+      <thead>
+        <tr>
+          <th>Grupo</th>
+          <th>Día y horario</th>
+          <th>Código(s) asignatura</th>
+        </tr>
+      </thead>
+      <tbody id="groupSummaryBody"></tbody>
+    </table>
   </div>
 
   <footer>ACTUALIZADO MANUALMENTE · AULA BASE P607</footer>
@@ -881,6 +947,84 @@ function renderNowNext(){
 
 renderNowNext();
 setInterval(renderNowNext, 60000);
+
+/* ---------------- RESUMEN POR GRUPO ---------------- */
+const GROUP_ORDER = ['1A-GMM','1A-GSAMT','1A-GSAV','1B-GSAMT','2A-GSAMT','2A-GMM','2B-GSAMT'];
+
+function buildGroupSummary(){
+  // 1) recorremos día por día fusionando horas consecutivas de la misma asignatura
+  const sessionsByGroup = {}; // key: "1A-GMM" -> { grupo, formacion, sessions:[{day,start,end,subj}], codes:Set }
+
+  DAYS.forEach(day=>{
+    let current = null;
+    HOURS.forEach(hour=>{
+      const entry = SCHEDULE[day][hour];
+      const {grupo, formacion} = entry ? parseCode(entry.code) : {};
+      const key = entry ? `${grupo}-${formacion}` : null;
+      const sameBlock = current && current.day === day && current.key === key && current.subj === entry.subj
+        && HOUR_ENDS[current.lastHour] === hour;
+
+      if(sameBlock){
+        current.end = HOUR_ENDS[hour];
+        current.lastHour = hour;
+      } else {
+        if(current) pushSession(current);
+        current = entry ? { key, grupo, formacion, day, start:hour, end:HOUR_ENDS[hour], lastHour:hour, subj:entry.subj } : null;
+      }
+    });
+    if(current) pushSession(current);
+  });
+
+  function pushSession(s){
+    if(!sessionsByGroup[s.key]){
+      sessionsByGroup[s.key] = { grupo:s.grupo, formacion:s.formacion, sessions:[], codes:new Set() };
+    }
+    sessionsByGroup[s.key].sessions.push({ day:s.day, start:s.start, end:s.end, subj:s.subj });
+    sessionsByGroup[s.key].codes.add(s.subj);
+  }
+
+  return sessionsByGroup;
+}
+
+function renderGroupSummary(){
+  const data = buildGroupSummary();
+  const tbody = document.getElementById('groupSummaryBody');
+  tbody.innerHTML = '';
+
+  GROUP_ORDER.forEach(key=>{
+    const g = data[key];
+    if(!g) return;
+    // ordenar sesiones por día (según DAYS) y luego por hora de inicio
+    g.sessions.sort((a,b)=> DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.start.localeCompare(b.start));
+
+    const tr = document.createElement('tr');
+    const tdGrupo = document.createElement('td');
+    tdGrupo.innerHTML = `<div class="cell-code">${grupoTagHTML(g.grupo)}<span>· ${g.formacion}</span></div>`;
+
+    const tdHorario = document.createElement('td');
+    tdHorario.innerHTML = g.sessions.map(s=>`
+      <div class="summary-session">
+        <span class="summary-day">${s.day}</span>
+        <span class="summary-hour">${s.start} – ${s.end}</span>
+        <span class="summary-code-inline">${s.subj}</span>
+      </div>
+    `).join('');
+
+    const tdCodigos = document.createElement('td');
+    tdCodigos.innerHTML = [...g.codes].map(c=>`
+      <div class="summary-code-row">
+        <span class="summary-code-chip">${c}</span>
+        <span class="summary-code-name">${SUBJECTS[c]}</span>
+      </div>
+    `).join('');
+
+    tr.appendChild(tdGrupo);
+    tr.appendChild(tdHorario);
+    tr.appendChild(tdCodigos);
+    tbody.appendChild(tr);
+  });
+}
+renderGroupSummary();
 </script>
 </body>
 </html>
