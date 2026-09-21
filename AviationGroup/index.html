@@ -49,6 +49,11 @@
     --grp-2A:#5b6ee6;
     --grp-2B:#a8632f;
 
+    /* guardias */
+    --guardia-solid:#6a5acd;
+    --guardia-tint:#eeecfa;
+    --guardia-dim:#2a2650;
+
     --radius:10px;
     font-family:'IBM Plex Sans',sans-serif;
   }
@@ -331,6 +336,27 @@
     border:1px solid var(--line);
     color:var(--text-primary);
     margin-bottom:8px;
+  }
+
+  /* ---------- GUARDIA ---------- */
+  td.cell-guardia{
+    background:var(--guardia-tint);
+    box-shadow:inset 3px 0 0 var(--guardia-solid);
+  }
+  .guardia-badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:13px;
+    color:var(--guardia-solid);
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .guardia-location{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--text-secondary);
+    margin-top:4px;
   }
 
   /* ---------- RESUMEN POR GRUPO ---------- */
@@ -626,6 +652,10 @@
       <div class="legend-row"><b>1665</b><span>Digitalización aplicada al sistema productivo (GS)</span></div>
       <div class="legend-row"><b>1664</b><span>Digitalización aplicada a los sectores productivos (GM)</span></div>
     </div>
+    <div class="legend-card">
+      <h3>Guardia</h3>
+      <div class="legend-row"><span style="display:flex;align-items:center;gap:6px;">🛡️<b>Guardia</b></span><span>Horas de presencia en la sede (no es clase)</span></div>
+    </div>
   </div>
 
   <p class="section-label">Resumen por grupo</p>
@@ -738,44 +768,49 @@ const CAMPUS = {
 };
 
 // hour -> end time used to compute "is this class happening right now"
-const HOUR_ENDS = { '08:00':'09:00','09:00':'10:00','10:00':'11:00','11:00':'12:00','12:00':'13:00','13:00':'14:00','17:00':'18:00','18:00':'19:00' };
-const HOURS = ['08:00','09:00','10:00','11:00','12:00','13:00','17:00','18:00'];
+const HOUR_ENDS = { '08:00':'09:00','09:00':'10:00','10:00':'11:00','11:00':'12:00','12:00':'13:00','13:00':'14:00','16:00':'17:00','17:00':'18:00','18:00':'19:00' };
+const HOURS = ['08:00','09:00','10:00','11:00','12:00','13:00','16:00','17:00','18:00'];
 const DAYS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
 
 function slot(code, subj){ return code ? {code, subj} : null; }
+function guardia(location){ return { type:'guardia', location }; } // location: 'Orovilla' | 'Barajas'
 
 const SCHEDULE = {
   'Lunes': {
     '08:00': slot('1A-GMM-OM','1444'), '09:00': slot('1A-GMM-OM','1444'),
     '10:00': slot('1A-GSAMT-OM','1426'), '11:00': slot('1A-GSAMT-OM','1426'),
     '12:00': slot('2A-GSAMT-OM','1428'), '13:00': slot('2A-GSAMT-OM','1428'),
+    '16:00': guardia('Orovilla'),
     '17:00': slot('2B-GSAMT-OT','1428'), '18:00': slot('2B-GSAMT-OT','1428')
   },
   'Martes': {
     '08:00': slot('2B-GSAMT-OM','1428'), '09:00': slot('2B-GSAMT-OM','1428'),
-    '10:00': null, '11:00': null,
+    '10:00': guardia('Orovilla'), '11:00': guardia('Orovilla'),
     '12:00': slot('1A-GMM-OM','1444'), '13:00': slot('1A-GMM-OM','1444'),
-    '17:00': null, '18:00': null
+    '16:00': null, '17:00': null, '18:00': null
   },
   'Miércoles': {
     '08:00': slot('1A-GSAV-BM','1427'), '09:00': slot('1A-GSAV-BM','1427'),
-    '10:00': null, '11:00': slot('1B-GSAMT-BM','1426'),
+    '10:00': guardia('Barajas'), '11:00': slot('1B-GSAMT-BM','1426'),
     '12:00': null, '13:00': slot('2A-GSAMT-OM','1665'),
+    '16:00': guardia('Orovilla'), // agendado como 1710-2A-GSAMT-OT, pero es sustitución de guardia esta semana
     '17:00': slot('2B-GSAMT-OT','1428'), '18:00': slot('2B-GSAMT-OT','1428')
   },
   'Jueves': {
     '08:00': slot('1A-GSAMT-OM','1426'), '09:00': slot('2B-GSAMT-OM','1428'),
     '10:00': slot('2B-GSAMT-OM','1428'), '11:00': slot('2A-GSAMT-OM','1428'),
     '12:00': slot('2A-GSAMT-OM','1428'), '13:00': slot('2A-GMM-OM','1664'),
-    '17:00': null, '18:00': null
+    '16:00': null, '17:00': null, '18:00': null
   },
   'Viernes': {
     '08:00': slot('1B-GSAMT-BM','1426'), '09:00': slot('1B-GSAMT-BM','1426'),
     '10:00': slot('1A-GSAV-BM','1427'), '11:00': slot('1A-GSAV-BM','1427'),
     '12:00': null, '13:00': slot('1A-GMM-OM','1444'),
-    '17:00': null, '18:00': slot('2A-GSAMT-OT','1665')
+    '16:00': guardia('Orovilla'), '17:00': guardia('Orovilla'),
+    '18:00': slot('2A-GSAMT-OT','1665')
   }
 };
+
 
 /* ---------------- HELPERS ---------------- */
 function parseCode(code){
@@ -785,14 +820,44 @@ function parseCode(code){
 function grupoLabel(g){
   return (g[0] + 'º ' + g[1]); // "1A" -> "1º A"
 }
-function grupoTagHTML(g){
-  return `<span class="grupo-dot grupo-dot-${g}"></span><span class="grupo-text-${g}">${grupoLabel(g)}</span>`;
+function turnoOf(campus){
+  return /M$/.test(campus) ? 'mañana' : 'tarde';
+}
+// Detecta qué combinaciones grupo+formación aparecen en más de un turno (mañana Y tarde)
+function computeAmbiguousGroups(){
+  const turnosByKey = {};
+  DAYS.forEach(day=>{
+    HOURS.forEach(hour=>{
+      const entry = SCHEDULE[day][hour];
+      if(!entry || entry.type === 'guardia') return;
+      const {grupo, formacion, campus} = parseCode(entry.code);
+      const key = `${grupo}-${formacion}`;
+      if(!turnosByKey[key]) turnosByKey[key] = new Set();
+      turnosByKey[key].add(turnoOf(campus));
+    });
+  });
+  const ambiguous = new Set();
+  Object.keys(turnosByKey).forEach(k=>{ if(turnosByKey[k].size > 1) ambiguous.add(k); });
+  return ambiguous;
+}
+const AMBIGUOUS_GROUPS = computeAmbiguousGroups();
+
+function grupoTagHTML(grupo, formacion, campus){
+  let label = grupoLabel(grupo);
+  if(formacion && campus && AMBIGUOUS_GROUPS.has(`${grupo}-${formacion}`)){
+    label += turnoOf(campus) === 'mañana' ? ' Mañana' : ' Tarde';
+  }
+  return `<span class="grupo-dot grupo-dot-${grupo}"></span><span class="grupo-text-${grupo}">${label}</span>`;
 }
 function badgeHTML(campus, dark){
   return `<span class="cell-badge campus-${campus}${dark ? ' dark' : ''}">${CAMPUS[campus] || campus}</span>`;
 }
 function sameEntry(a, b){
-  return !!a && !!b && a.code === b.code && a.subj === b.subj;
+  if(!a || !b) return false;
+  if(a.type === 'guardia' || b.type === 'guardia'){
+    return a.type === 'guardia' && b.type === 'guardia' && a.location === b.location;
+  }
+  return a.code === b.code && a.subj === b.subj;
 }
 // Dado un día y una hora dentro de un bloque, devuelve el rango horario real
 // fusionando las horas consecutivas que son la misma clase (mismo grupo/formación/asignatura)
@@ -823,11 +888,17 @@ HOURS.forEach(hour=>{
     td.dataset.day = day;
     td.dataset.hour = hour;
     const entry = SCHEDULE[day][hour];
-    if(entry){
+    if(entry && entry.type === 'guardia'){
+      td.classList.add('cell-guardia');
+      td.innerHTML = `
+        <div class="guardia-badge">🛡️ Guardia</div>
+        <div class="guardia-location">${entry.location}</div>
+      `;
+    } else if(entry){
       const {grupo, formacion, campus} = parseCode(entry.code);
       td.classList.add('cell-' + campus);
       td.innerHTML = `
-        <div class="cell-code">${grupoTagHTML(grupo)}<span>· ${formacion}</span></div>
+        <div class="cell-code">${grupoTagHTML(grupo, formacion, campus)}<span>· ${formacion}</span></div>
         <div class="cell-name">${SUBJECTS[entry.subj]} <span style="color:var(--text-dim)">(${entry.subj})</span></div>
         ${badgeHTML(campus)}
       `;
@@ -876,9 +947,18 @@ function renderNowNext(){
   }
 
   function buildFlapContent(entry, startHour, endHour){
+    if(entry.type === 'guardia'){
+      return `
+        <div class="flap-code">🛡️ Guardia</div>
+        <div class="flap-name">${entry.location}</div>
+        <div class="flap-meta">
+          <span class="chip time">${startHour} – ${endHour}</span>
+        </div>
+      `;
+    }
     const {grupo, formacion, campus} = parseCode(entry.code);
     return `
-      <div class="flap-code">${grupoTagHTML(grupo)}<span>· ${formacion}</span></div>
+      <div class="flap-code">${grupoTagHTML(grupo, formacion, campus)}<span>· ${formacion}</span></div>
       <div class="flap-name">${SUBJECTS[entry.subj]}</div>
       <div class="flap-meta">
         <span class="chip time">${startHour} – ${endHour}</span>
@@ -949,19 +1029,33 @@ renderNowNext();
 setInterval(renderNowNext, 60000);
 
 /* ---------------- RESUMEN POR GRUPO ---------------- */
-const GROUP_ORDER = ['1A-GMM','1A-GSAMT','1A-GSAV','1B-GSAMT','2A-GSAMT','2A-GMM','2B-GSAMT'];
+const GRUPO_SORT = ['1A','1B','2A','2B'];
+function sortGroupKeys(keys){
+  return keys.sort((a,b)=>{
+    const pa = a.split('-'), pb = b.split('-');
+    const ga = GRUPO_SORT.indexOf(pa[0]), gb = GRUPO_SORT.indexOf(pb[0]);
+    if(ga !== gb) return ga - gb;
+    if(pa[1] !== pb[1]) return pa[1].localeCompare(pb[1]);
+    return (pa[2]||'').localeCompare(pb[2]||'');
+  });
+}
 
 function buildGroupSummary(){
   // 1) recorremos día por día fusionando horas consecutivas de la misma asignatura
-  const sessionsByGroup = {}; // key: "1A-GMM" -> { grupo, formacion, sessions:[{day,start,end,subj}], codes:Set }
+  const sessionsByGroup = {}; // key -> { grupo, formacion, turno, sessions:[{day,start,end,subj,campus}], codes:Set }
 
   DAYS.forEach(day=>{
     let current = null;
     HOURS.forEach(hour=>{
-      const entry = SCHEDULE[day][hour];
-      const {grupo, formacion} = entry ? parseCode(entry.code) : {};
-      const key = entry ? `${grupo}-${formacion}` : null;
-      const sameBlock = current && current.day === day && current.key === key && current.subj === entry.subj
+      const raw = SCHEDULE[day][hour];
+      const entry = (raw && raw.type === 'guardia') ? null : raw; // las guardias no son un grupo de alumnos
+      const parsed = entry ? parseCode(entry.code) : {};
+      const {grupo, formacion, campus} = parsed;
+      const baseKey = entry ? `${grupo}-${formacion}` : null;
+      const turno = entry ? turnoOf(campus) : null;
+      // si el grupo es ambiguo (aparece en mañana y tarde), lo separamos como grupos distintos
+      const key = entry ? (AMBIGUOUS_GROUPS.has(baseKey) ? `${baseKey}-${turno}` : baseKey) : null;
+      const sameBlock = current && current.day === day && current.key === key && entry && current.subj === entry.subj
         && HOUR_ENDS[current.lastHour] === hour;
 
       if(sameBlock){
@@ -969,7 +1063,7 @@ function buildGroupSummary(){
         current.lastHour = hour;
       } else {
         if(current) pushSession(current);
-        current = entry ? { key, grupo, formacion, day, start:hour, end:HOUR_ENDS[hour], lastHour:hour, subj:entry.subj } : null;
+        current = entry ? { key, grupo, formacion, turno, campus, day, start:hour, end:HOUR_ENDS[hour], lastHour:hour, subj:entry.subj } : null;
       }
     });
     if(current) pushSession(current);
@@ -977,9 +1071,9 @@ function buildGroupSummary(){
 
   function pushSession(s){
     if(!sessionsByGroup[s.key]){
-      sessionsByGroup[s.key] = { grupo:s.grupo, formacion:s.formacion, sessions:[], codes:new Set() };
+      sessionsByGroup[s.key] = { grupo:s.grupo, formacion:s.formacion, turno:s.turno, campus:s.campus, sessions:[], codes:new Set() };
     }
-    sessionsByGroup[s.key].sessions.push({ day:s.day, start:s.start, end:s.end, subj:s.subj });
+    sessionsByGroup[s.key].sessions.push({ day:s.day, start:s.start, end:s.end, subj:s.subj, campus:s.campus });
     sessionsByGroup[s.key].codes.add(s.subj);
   }
 
@@ -991,7 +1085,7 @@ function renderGroupSummary(){
   const tbody = document.getElementById('groupSummaryBody');
   tbody.innerHTML = '';
 
-  GROUP_ORDER.forEach(key=>{
+  sortGroupKeys(Object.keys(data)).forEach(key=>{
     const g = data[key];
     if(!g) return;
     // ordenar sesiones por día (según DAYS) y luego por hora de inicio
@@ -999,7 +1093,7 @@ function renderGroupSummary(){
 
     const tr = document.createElement('tr');
     const tdGrupo = document.createElement('td');
-    tdGrupo.innerHTML = `<div class="cell-code">${grupoTagHTML(g.grupo)}<span>· ${g.formacion}</span></div>`;
+    tdGrupo.innerHTML = `<div class="cell-code">${grupoTagHTML(g.grupo, g.formacion, g.campus)}<span>· ${g.formacion}</span></div>`;
 
     const tdHorario = document.createElement('td');
     tdHorario.innerHTML = g.sessions.map(s=>`
