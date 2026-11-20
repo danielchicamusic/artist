@@ -21,6 +21,21 @@
 [data-lang="en"] [data-es], [data-lang="es"] [data-en] { display:none; }
 [data-lang="en"] [data-en], [data-lang="es"] [data-es] { display:revert; }
 </style>
+<style>
+/* BIO: two-column layout (desktop) */
+.bio-mark{margin-bottom:2.5rem;}
+.bio-wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:4rem;align-items:start;}
+.bio-col-text > center{text-align:left;}
+.bio-col-text .bio-text:last-of-type{margin-bottom:0;}
+.bio-col-djs .warmup-box{margin-top:0;position:sticky;top:6.5rem;}
+/* BIO: single column (mobile / tablet) */
+@media(max-width:900px){
+  .bio-mark{margin-bottom:1.25rem;}
+  .bio-wrap{grid-template-columns:1fr;gap:2rem;}
+  .bio-col-text > center{text-align:center;}
+  .bio-col-djs .warmup-box{position:static;}
+}
+</style>
 </head>
 <body>
 
@@ -71,10 +86,12 @@
 </div>
 
 <!-- BIO -->
-<section>
-      <center><br>
+<section class="bio-section">
+      <center class="bio-mark"><br>
           <img class="hero-iso" src="images/logos/flecha.png" alt="">
       </center>
+  <div class="bio-wrap">
+    <div class="bio-col bio-col-text">
         <p class="bio-text reveal" data-en>Daniel, Telematics Engineer and a true dance floor artist. Based in <strong>Madrid (ESP)</strong> but originally from <strong>Manizales (COL)</strong>, he has built a solid career in the electronic music scene since his beginnings in <strong>2011</strong>. His sound masterfully combines elements of <strong>Minimal, House, Tech and Dance Music</strong>, delivering high-energy hybrid sets specially designed for clubs and festivals.</p>
         <p class="bio-text reveal" data-es>Daniel, Ingeniero en Telemática y un verdadero artista de pista de baile. Radicado en <strong>Madrid (ESP)</strong> pero originario de <strong>Manizales (COL)</strong>, ha construido una sólida carrera en la escena de la música electrónica desde sus inicios en <strong>2011</strong>. Su sonido combina magistralmente elementos de <strong>Minimal, House, Tech y Dance Music</strong>, ofreciendo sets híbridos de alta energía especialmente diseñados para clubs y festivales.</p>
 
@@ -96,11 +113,16 @@
         </div>
 
       </center>
+    </div>
+    <aside class="bio-col bio-col-djs">
         <div class="warmup-box reveal">
           <center><div class="section-tag" style="margin-bottom:1rem;" data-en>Shared the decks with some of the most influential names in global electronic music.</div>
           <div class="section-tag" style="margin-bottom:1rem;" data-es>Compartió las cabinas con algunos de los nombres más influyentes de la música electrónica mundial.</div></center>
           <div class="dj-grid" id="djs"></div>
-        </div></section>
+        </div>
+    </aside>
+  </div>
+</section>
 
 <!-- GALLERY -->
 <section style="padding-top:5rem;padding-bottom:5rem;">
